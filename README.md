@@ -5,8 +5,20 @@ applications Gradilis (magasin, pépinière, verger, …). Source unique de la c
 graphique : thème, tokens sémantiques, formatage fr-FR, primitives, page-vitrine `canon`
 et châssis `spatial`.
 
-> Repo dédié, **privé**, versionné par tags git. Remplace l'ancien vendoring copié-collé
-> entre apps (cf. historique « DM-7 »).
+> Repo dédié, versionné par tags git. Consommé par **toutes** les apps Gradilis
+> (magasin, pépinière, verger, et les apps legacy en cours de modernisation :
+> logistique, personnel).
+
+## Écosystème & gouvernance
+
+Ce repo est la **stratégie de consommation retenue** pour la charte Gradilis :
+chaque app l'installe en **git-dep + tag** (ci-dessous). L'ancienne approche par
+**vendoring** (recopier les tokens dans chaque app) est **abandonnée** — toute app
+qui aurait vendoré le thème doit basculer sur ce package.
+
+Ce package **implémente** la charte de gouvernance UI/UX transverse de l'écosystème
+(couleurs chiffrées, typographie, WCAG AA, interdits) ; les do/don't opérationnels
+sont dans [`DESIGN.md`](./DESIGN.md).
 
 ## Points d'entrée (subpaths)
 
@@ -17,13 +29,13 @@ et châssis `spatial`.
 | `@gradilis/ui/canon` | référence visuelle vivante de la charte, montée par chaque app avec **son** thème |
 | `@gradilis/ui/spatial` | châssis pan/zoom (minimap, HUD, calques) — peers optionnels, opt-in |
 
-## Consommation (git-dep + tags, SSH)
+## Consommation (git-dep + tags)
 
 Dans le `package.json` d'une app :
 
 ```jsonc
 "dependencies": {
-  "@gradilis/ui": "git+ssh://git@github.com/kurokay/gradilis-ui.git#v0.1.0"
+  "@gradilis/ui": "git+https://github.com/kurokay/gradilis-ui.git#v0.4.0"
 }
 ```
 
@@ -60,10 +72,13 @@ git push --tags
 # puis, dans chaque app à mettre à jour : bump du tag dans package.json + npm install
 ```
 
-## Auth builds (Dokploy)
+## Auth builds (Dokploy, CI, clones)
 
-Le repo est privé : les builds Dokploy accèdent via une **deploy key** en lecture seule
-(une seule, ajoutée aux settings du repo GitHub, réutilisée par toutes les apps).
+Repo **public** : le clone HTTPS est **anonyme** — aucune clé, aucun secret, ni en
+local, ni en CI, ni dans les builds Dokploy. Le contenu se limite à la charte
+graphique (thème, tokens sémantiques, primitives génériques) : aucun secret, aucune
+donnée métier, aucune logique applicative. Les tokens de marque de chaque app
+restent dans l'app.
 
 ## Peer dependencies
 

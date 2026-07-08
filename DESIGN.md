@@ -1,11 +1,15 @@
-# DESIGN.md — règles d'usage de la charte Gradilis Pépinière
+# DESIGN.md — règles d'usage de la charte Gradilis (`@gradilis/ui`)
 
-> Règles de `GUIDELINES UI-UX GRADILIS.md` §3 reformulées en do/don't, plus les
-> conventions obligatoires du playbook §4 et les **divergences consignées** (§ final).
-> Source unique des tokens : `src/theme.ts` + `src/colors.ts` (M.1) — seuls fichiers
-> autorisés à contenir des hex (lint anti-hex M.4, échec = build cassé).
-> Référence inspectable : l'app-canon sur **`/app/canon`** (§9 : « comparer » = la
-> rendre et confronter, pas deviner).
+> Règles de la charte de gouvernance UI/UX Gradilis reformulées en do/don't, plus
+> les conventions frontend obligatoires de l'écosystème et les **divergences
+> consignées** (§ final).
+> Le socle est **agnostique de marque** : les rampes sémantiques + le neutre vivent
+> dans `src/colors.ts`, la structure du thème dans `src/theme.ts` (factory
+> `createGradilisTheme`) ; les **rampes d'identité de chaque marque** vivent dans
+> l'app (`theme/tokens.ts` de l'app), injectées dans la factory. Seuls ces fichiers
+> sont autorisés à contenir des hex (lint anti-hex, échec = build cassé).
+> Référence inspectable : l'app-canon (subpath `@gradilis/ui/canon`), montée par
+> chaque app avec **son** thème (§9 : « comparer » = la rendre et confronter).
 
 ## 1. Couleurs
 
