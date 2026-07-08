@@ -5,14 +5,14 @@
  * jsdom, est garanti par les ratios mesurés du thème §3.2/§3.7).
  */
 import { cleanup, render } from '@testing-library/react';
-import { MantineProvider } from '@mantine/core';
+import { MantineProvider, type MantineColorsTuple } from '@mantine/core';
 import { ModalsProvider } from '@mantine/modals';
 import { MemoryRouter } from 'react-router-dom';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { axe } from 'vitest-axe';
 
-import { gradilisTheme } from '../theme.js';
-import { gradilisGreen, gradilisLime } from '../tokens/pepiniere.js';
+import { createGradilisTheme, gradilisTheme } from '../theme.js';
+import { gradilisGreen } from '../tokens/pepiniere.js';
 import { CanonColors } from './CanonColors.js';
 import { CanonStates } from './CanonStates.js';
 
@@ -65,28 +65,45 @@ describe('CanonStates', () => {
 describe('CanonColors', () => {
   it('affiche les hex du thème à l’exécution (aucun littéral dans le canon)', () => {
     const { getAllByText } = renderCanon(<CanonColors />);
-    // idx 7 du vert (bouton plein) et idx 5 du lime (l'interdit à connaître) —
-    // valeurs lues depuis colors.ts, source unique, et rendues par le thème.
+    // idx 7 de la primaire (bouton plein) — lu depuis le thème, source unique.
     expect(getAllByText(gradilisGreen[7].toUpperCase()).length).toBeGreaterThan(0);
-    expect(getAllByText(gradilisLime[5].toUpperCase()).length).toBeGreaterThan(0);
   });
 
-  it('rend les 8 rampes avec leurs 10 index et passe axe', async () => {
+  it('rend le défaut agnostique : primaire + rampes socle, et passe axe', async () => {
     const { container, getByText } = renderCanon(<CanonColors />);
-    for (const cle of [
-      'gradilisGreen',
-      'gradilisLime',
-      'gradilisBrown',
-      'gradilisGray',
-      'succes',
-      'alerte',
-      'erreur',
-      'info',
-    ]) {
+    // Défaut = primaire du thème (gradilisGreen ici) + neutre + 4 sémantiques.
+    for (const cle of ['gradilisGreen', 'gradilisGray', 'succes', 'alerte', 'erreur', 'info']) {
       getByText(cle);
     }
-    // 8 rampes × 10 nuances = 80 pastilles.
-    expect(container.querySelectorAll('.mantine-ColorSwatch-root').length).toBe(80);
+    // 6 rampes × 10 nuances = 60 pastilles.
+    expect(container.querySelectorAll('.mantine-ColorSwatch-root').length).toBe(60);
     expect((await axe(container, AXE_OPTIONS)).violations).toEqual([]);
+  });
+
+  it('point d’extension : une liste `rampes` personnalisée est rendue', () => {
+    const { getByText } = renderCanon(
+      <CanonColors rampes={[{ cle: 'gradilisGray', role: 'Neutres', regle: 'Surfaces et bordures.' }]} />,
+    );
+    getByText('Surfaces et bordures.');
+  });
+
+  it('agnostique : monté sous une marque NON-verte, montre sa propre primaire', () => {
+    // Marque factice « olive » (façon magasin) — prouve le découplage Étape 4bis.
+    const olive: MantineColorsTuple = [
+      '#f6f6f1', '#e9e7d8', '#d7d3b8', '#c6c3b2', '#b4af8d',
+      '#a29b68', '#8f8750', '#555232', '#43401f', '#302e12',
+    ];
+    const themeOlive = createGradilisTheme({ primaryColor: 'ampOlive', brandRamps: { ampOlive: olive } });
+    const { getByText, getAllByText } = render(
+      <MantineProvider theme={themeOlive} forceColorScheme="light">
+        <ModalsProvider>
+          <MemoryRouter>
+            <CanonColors />
+          </MemoryRouter>
+        </ModalsProvider>
+      </MantineProvider>,
+    );
+    getByText('ampOlive'); // la primaire de la marque, pas gradilisGreen
+    expect(getAllByText(olive[7].toUpperCase()).length).toBeGreaterThan(0);
   });
 });

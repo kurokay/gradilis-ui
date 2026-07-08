@@ -49,10 +49,9 @@ export function CanonAppShell() {
             size="sm"
             aria-label="Ouvrir ou fermer la navigation"
           />
-          {/* Titres en brun idx 7 (#654E45, 7,70:1) — neutre chaud §3.2. */}
-          <Title order={4} c="gradilisBrown.7">
-            Gradilis Pépinière — app-canon
-          </Title>
+          {/* Titre en couleur de texte par défaut (`--mantine-color-text`) —
+              agnostique de marque (chaque app garde sa teinte via son thème). */}
+          <Title order={4}>Gradilis — app-canon</Title>
         </Group>
       </AppShell.Header>
 

@@ -3,7 +3,7 @@
  * `tabular-nums` (`<Num>`), format FR centralisé (M.3), badges sémantiques,
  * et un graphe @mantine/charts trivial (série = token du thème, jamais d'hex).
  */
-import { Badge, Card, Paper, SimpleGrid, Stack, Text } from '@mantine/core';
+import { Badge, Card, Paper, SimpleGrid, Stack, Text, useMantineTheme } from '@mantine/core';
 import { BarChart } from '@mantine/charts';
 
 import { Num } from '../components/Num.js';
@@ -38,12 +38,13 @@ const EXPEDITIONS_MENSUELLES = [
 ];
 
 export function CanonKPI() {
+  const theme = useMantineTheme();
   return (
     <Stack gap="sm">
       <PageBreadcrumb items={[{ label: 'App-canon', to: '/canon' }, { label: 'KPI & graphe' }]} />
       <Text c="dimmed" size="sm">
         Cartes de stats : valeur en mono/tabular-nums, libellé dimmed, badge sémantique. Série du
-        graphe = token du thème (gradilisGreen.6, identité).
+        graphe = primaire du thème (idx 6, identité) — agnostique de marque.
       </Text>
       <SimpleGrid cols={{ base: 1, sm: 3 }}>
         {KPIS.map((kpi) => (
@@ -69,7 +70,7 @@ export function CanonKPI() {
             h={220}
             data={EXPEDITIONS_MENSUELLES}
             dataKey="mois"
-            series={[{ name: 'arbres', label: 'Arbres expédiés', color: 'gradilisGreen.6' }]}
+            series={[{ name: 'arbres', label: 'Arbres expédiés', color: `${theme.primaryColor}.6` }]}
             valueFormatter={formatQuantite}
           />
         </div>

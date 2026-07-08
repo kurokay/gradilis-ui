@@ -13,5 +13,5 @@ export { CanonTable } from './CanonTable.js';
 export { CanonForm } from './CanonForm.js';
 export { CanonKPI } from './CanonKPI.js';
 export { CanonStates } from './CanonStates.js';
-export { CanonColors } from './CanonColors.js';
+export { CanonColors, type RampeDoc, type CanonColorsProps } from './CanonColors.js';
 export { CanonSpatial } from './CanonSpatial.js';

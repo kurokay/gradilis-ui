@@ -1,8 +1,11 @@
 /**
- * CanonColors — nuanciers des 8 rampes du thème avec index (aide au contrôle
- * AA, §3.2/§3.7). Les hex affichés viennent du THÈME À L'EXÉCUTION
- * (`useMantineTheme()`), jamais de littéraux : ce fichier passe le lint
- * anti-hex sans exception — ce que l'on voit est ce que le thème sert.
+ * CanonColors — nuanciers des rampes du thème avec index (aide au contrôle AA,
+ * §3.2/§3.7). Les hex affichés viennent du THÈME À L'EXÉCUTION
+ * (`useMantineTheme()`), jamais de littéraux.
+ *
+ * AGNOSTIQUE : par défaut, montre la primaire du thème + les rampes socle
+ * (neutre + sémantiques). Chaque app passe sa propre liste `rampes` (avec ses
+ * rampes de marque et sa prose §3.2) pour documenter sa charte complète.
  */
 import {
   Badge,
@@ -19,71 +22,50 @@ import {
 import { Num } from '../components/Num.js';
 import { PageBreadcrumb } from '../components/PageBreadcrumb.js';
 
-const RAMPES: { cle: string; role: string; regle: string }[] = [
-  {
-    cle: 'gradilisGreen',
-    role: 'Primaire / action',
-    regle: 'Boutons pleins = idx 7 (blanc dessus 5,86:1 AA) ; identité = idx 6 (texte large/gras seulement).',
-  },
-  {
-    cle: 'gradilisLime',
-    role: 'Accent / signature',
-    regle: 'Highlights, séries de graphes, déco — JAMAIS en texte ni fond de bouton (idx 5 sur blanc = 2,09:1).',
-  },
-  {
-    cle: 'gradilisBrown',
-    role: 'Neutre chaud',
-    regle: 'Titres et libellés en idx 7 (7,70:1 sur blanc).',
-  },
-  {
-    cle: 'gradilisGray',
-    role: 'Neutres',
-    regle: 'Surfaces, textes secondaires, bordures.',
-  },
-  {
-    cle: 'succes',
-    role: 'Sémantique succès',
-    regle: 'Ancre §3.2 assombrie en idx 9 (AA) — divergence consignée dans DESIGN.md.',
-  },
-  {
-    cle: 'alerte',
-    role: 'Sémantique alerte',
-    regle: 'Ambre — texte foncé requis sur fond plein (autoContrast s’en charge).',
-  },
-  {
-    cle: 'erreur',
-    role: 'Sémantique erreur',
-    regle: 'Terracotta (pont Au Mas Paysan) — idx 7, blanc dessus 5,15:1.',
-  },
-  {
-    cle: 'info',
-    role: 'Sémantique info',
-    regle: 'Ardoise — idx 9, 7,37:1.',
-  },
-];
+/** Description d'une rampe pour le nuancier (fournie par l'app pour sa charte). */
+export interface RampeDoc {
+  /** Clé de la rampe dans `theme.colors`. */
+  cle: string;
+  /** Rôle affiché (badge). */
+  role: string;
+  /** Règle d'usage §3.2 (optionnelle). */
+  regle?: string;
+}
 
-export function CanonColors() {
+export interface CanonColorsProps {
+  /** Rampes à documenter. Défaut : primaire du thème + rampes socle. */
+  rampes?: RampeDoc[];
+}
+
+export function CanonColors({ rampes }: CanonColorsProps = {}) {
   const theme = useMantineTheme();
-  // Les rampes custom ne sont pas déclarées via augmentation de module (choix
-  // M.1) : on élargit le type d'indexation, les clés de RAMPES sont celles du
-  // thème (theme.ts).
+  // Les rampes custom ne sont pas déclarées via augmentation de module : on
+  // élargit le type d'indexation, les clés visées sont celles du thème.
   const couleurs = theme.colors as Record<string, MantineColorsTuple | undefined>;
+
+  // Défaut agnostique : la primaire (quelle que soit la marque) + le socle.
+  const liste: RampeDoc[] = rampes ?? [
+    { cle: theme.primaryColor, role: 'Primaire / action' },
+    { cle: 'gradilisGray', role: 'Neutres' },
+    { cle: 'succes', role: 'Sémantique succès' },
+    { cle: 'alerte', role: 'Sémantique alerte' },
+    { cle: 'erreur', role: 'Sémantique erreur' },
+    { cle: 'info', role: 'Sémantique info' },
+  ];
 
   return (
     <Stack gap="sm">
       <PageBreadcrumb items={[{ label: 'App-canon', to: '/canon' }, { label: 'Couleurs' }]} />
       <Text c="dimmed" size="sm">
-        Les 8 rampes du thème, index 0 (clair) → 9 (foncé). Hex lus dans le thème à l'exécution —
-        source unique : @gradilis/ui (colors.ts/theme.ts), seuls fichiers autorisés à contenir des hex.
+        Rampes du thème, index 0 (clair) → 9 (foncé). Hex lus dans le thème à l'exécution —
+        source unique : @gradilis/ui (tokens de marque + colors.ts socle).
       </Text>
-      {RAMPES.map(({ cle, role, regle }) => {
+      {liste.map(({ cle, role, regle }) => {
         const rampe = couleurs[cle] ?? [];
         return (
           <Paper key={cle} withBorder radius="md" p="md">
             <Group gap="xs" mb="xs">
-              <Title order={4} c="gradilisBrown.7">
-                {cle}
-              </Title>
+              <Title order={4}>{cle}</Title>
               <Badge variant="light" color="gradilisGray">
                 {role}
               </Badge>
@@ -101,9 +83,11 @@ export function CanonColors() {
                 </Stack>
               ))}
             </Group>
-            <Text size="sm" c="dimmed" mt="xs">
-              {regle}
-            </Text>
+            {regle ? (
+              <Text size="sm" c="dimmed" mt="xs">
+                {regle}
+              </Text>
+            ) : null}
           </Paper>
         );
       })}

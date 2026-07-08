@@ -7,7 +7,7 @@
  * `PageBreadcrumb`, `FittedDataTable`, `notify`, `openConfirm`, hooks tables,
  * `useSaveShortcut`. Subpaths : `/format`, `/canon`, `/spatial`. Règles : DESIGN.md.
  */
-export const GRADILIS_UI_VERSION = '0.2.0';
+export const GRADILIS_UI_VERSION = '0.3.0';
 
 // Thème : factory agnostique (API cible).
 export {

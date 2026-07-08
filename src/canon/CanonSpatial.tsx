@@ -160,11 +160,11 @@ export function CanonSpatial() {
                         height: zone.h * CELLULE,
                         backgroundColor: 'var(--gradilis-bg-brand)',
                         opacity: 0.6,
-                        border: '1px dashed var(--mantine-color-gradilisGreen-7)',
+                        border: '1px dashed var(--mantine-primary-color-7)',
                         pointerEvents: 'none',
                       }}
                     >
-                      <Text size="xs" fw={600} c="gradilisGreen.7" px={4}>
+                      <Text size="xs" fw={600} c="var(--mantine-primary-color-7)" px={4}>
                         {zone.label}
                       </Text>
                     </Box>
@@ -201,8 +201,8 @@ export function CanonSpatial() {
                     top: palette.rang * CELLULE + 2,
                     width: CELLULE - 4,
                     height: CELLULE - 4,
-                    backgroundColor: 'var(--mantine-color-gradilisGreen-1)',
-                    border: '1px solid var(--mantine-color-gradilisGreen-7)',
+                    backgroundColor: 'var(--mantine-primary-color-1)',
+                    border: '1px solid var(--mantine-primary-color-7)',
                     borderRadius: 'var(--mantine-radius-xs)',
                     overflow: 'hidden',
                     paddingInline: 4,
@@ -214,7 +214,7 @@ export function CanonSpatial() {
                       <Text size="xs" fw={600} ff="monospace" lh={1.3}>
                         {palette.numero}
                       </Text>
-                      <Text size="xs" c="gradilisBrown.7" lh={1.3} truncate>
+                      <Text size="xs" lh={1.3} truncate>
                         {palette.variete}
                       </Text>
                       <Text size="xs" c="dimmed" lh={1.3} truncate>
@@ -276,7 +276,7 @@ export function CanonSpatial() {
                       top: palette.rang * CELLULE * echelle,
                       width: Math.max(CELLULE * echelle - 1, 2),
                       height: Math.max(CELLULE * echelle - 1, 2),
-                      backgroundColor: 'var(--mantine-color-gradilisGreen-6)',
+                      backgroundColor: 'var(--mantine-primary-color-6)',
                     }}
                   />
                 ))}
