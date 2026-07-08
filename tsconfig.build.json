@@ -1,0 +1,16 @@
+{
+  // Build de publication : émission JS + déclarations dans dist/.
+  // Contrairement au montage workspace historique (où Vite compilait les .ts
+  // sources), la consommation en git-dep exige du JS distribuable — d'où
+  // l'émission complète ici, lancée par le script `prepare` à l'installation.
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": false,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "outDir": "dist",
+    "rootDir": "src"
+  },
+  "exclude": ["src/**/*.test.ts", "src/**/*.test.tsx"]
+}
