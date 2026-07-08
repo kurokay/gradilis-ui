@@ -1,25 +1,40 @@
 /**
- * @gradilis/ui — design system Gradilis Pépinière.
+ * @gradilis/ui — design system Gradilis, socle AGNOSTIQUE de marque.
  *
- * Vendoring du socle `gradilis_magasin` (plan Chantier M, DM-7) : thème
- * re-tokenisé Pépinière (rampes GUIDELINES §3.2, primaire `gradilisGreen`) +
- * primitives (`Num`, `PageBreadcrumb`, `FittedDataTable`, `notify`,
- * `openConfirm`, hooks tables, `useSaveShortcut`). Règles d'usage : DESIGN.md.
- * App-canon : export séparé `@gradilis/ui/canon` (M.2), packaging final (M.5).
+ * Thème via factory `createGradilisTheme(tokens)` + `makeCssVars(tokens, extras)`
+ * (chaque app injecte ses rampes de marque et polices). Rampes socle : neutre
+ * `gradilisGray` + sémantiques `succes/alerte/erreur/info`. Primitives : `Num`,
+ * `PageBreadcrumb`, `FittedDataTable`, `notify`, `openConfirm`, hooks tables,
+ * `useSaveShortcut`. Subpaths : `/format`, `/canon`, `/spatial`. Règles : DESIGN.md.
  */
-export const GRADILIS_UI_VERSION = '0.1.0';
+export const GRADILIS_UI_VERSION = '0.2.0';
 
-export { gradilisTheme, gradilisCssVars } from './theme.js';
+// Thème : factory agnostique (API cible).
 export {
-  gradilisGreen,
-  gradilisLime,
-  gradilisBrown,
+  createGradilisTheme,
+  makeCssVars,
+  type GradilisThemeTokens,
+  type CssVarsExtras,
+} from './theme.js';
+
+// Rampes SOCLE (partagées par toutes les marques).
+export {
   gradilisGray,
   semSuccess,
   semWarning,
   semError,
   semInfo,
 } from './colors.js';
+
+// Compat transitoire — thème pépinière prêt à l'emploi + rampes de marque.
+// Relocalisés dans l'app pépinière à l'Étape 4 (cf. tokens/pepiniere.ts).
+export {
+  gradilisTheme,
+  gradilisCssVars,
+  gradilisGreen,
+  gradilisLime,
+  gradilisBrown,
+} from './theme.js';
 
 // Primitives vendorées du magasin (DM-7) — conventions playbook §4.
 export { Num } from './components/Num.js';

@@ -1,35 +1,16 @@
 import type { MantineColorsTuple } from '@mantine/core';
 
 /**
- * Rampes de couleur — Gradilis Pépinière (GUIDELINES UI-UX GRADILIS §3.2).
+ * Rampes de couleur SOCLE — agnostiques de marque (GUIDELINES §3.2).
  *
- * Index 0 (clair) → 9 (foncé). Les 4 rampes de marque sont recopiées
- * LITTÉRALEMENT depuis les guidelines §3.2 (source de vérité — contrôle diff
- * manuel à chaque modification, ne jamais régénérer sans mettre à jour le doc).
- * Les rampes sémantiques sont vendorées du socle `gradilis_magasin/packages/ui`
- * (DM-7) : leurs ancres coïncident avec celles du §3.2.
+ * Ce fichier ne contient que les rampes partagées par TOUTES les marques : le
+ * neutre `gradilisGray` et les 4 rampes SÉMANTIQUES (invariantes entre magasin
+ * et pépinière — vérifié au diff). Les rampes d'identité (vert/lime/brun,
+ * olive/terracotta/…) vivent dans les tokens de chaque app (`tokens/*.ts`).
  *
- * Seul ce fichier (avec `theme.ts`) est autorisé à contenir des hex (lint M.4).
- * Contrastes WCAG cible : AA — texte normal ≥ 4,5:1 ; large/composants ≥ 3:1 (§3.7).
+ * Index 0 (clair) → 9 (foncé). Seul ce fichier (avec `theme.ts` et `tokens/*`)
+ * est autorisé à contenir des hex. Contraste WCAG cible : AA (§3.7).
  */
-
-/** Primaire / action. Identité idx6 (#008D36) ; bouton plein idx7 (#00752D, blanc dessus = 5,86:1 ✓ AA). */
-export const gradilisGreen: MantineColorsTuple = [
-  '#EDF7F1', '#C6E5D2', '#9ED4B3', '#77C293', '#4FB074',
-  '#289F55', '#008D36', '#00752D', '#005C23', '#00441A',
-];
-
-/** Accent / signature. Highlights, séries de graphes, déco — JAMAIS texte ni fond de bouton (idx5 sur blanc = 2,09:1). */
-export const gradilisLime: MantineColorsTuple = [
-  '#F8FBF0', '#E4EFC9', '#D1E4A2', '#BDD97A', '#AACD53',
-  '#96C22C', '#82A926', '#6F9021', '#5C761B', '#485D15',
-];
-
-/** Neutre chaud. Titres, libellés (idx7 sur blanc = 7,70:1 ✓). */
-export const gradilisBrown: MantineColorsTuple = [
-  '#F4F3F2', '#E0DBD9', '#CBC4C1', '#B7ACA8', '#A2958F',
-  '#8E7D76', '#79665E', '#654E45', '#4B3A33', '#302521',
-];
 
 /** Neutres. Surfaces, textes secondaires, bordures. */
 export const gradilisGray: MantineColorsTuple = [

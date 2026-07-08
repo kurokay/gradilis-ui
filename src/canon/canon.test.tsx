@@ -12,7 +12,7 @@ import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { axe } from 'vitest-axe';
 
 import { gradilisTheme } from '../theme.js';
-import { gradilisGreen, gradilisLime } from '../colors.js';
+import { gradilisGreen, gradilisLime } from '../tokens/pepiniere.js';
 import { CanonColors } from './CanonColors.js';
 import { CanonStates } from './CanonStates.js';
 

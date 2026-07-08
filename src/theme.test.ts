@@ -3,15 +3,13 @@ import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
 import {
-  gradilisBrown,
   gradilisGray,
-  gradilisGreen,
-  gradilisLime,
   semError,
   semInfo,
   semSuccess,
   semWarning,
 } from './colors.js';
+import { gradilisBrown, gradilisGreen, gradilisLime } from './tokens/pepiniere.js';
 import { gradilisTheme } from './theme.js';
 
 /**
