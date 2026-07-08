@@ -70,20 +70,39 @@ export function formatDate(
 
 /**
  * Nombre décimal localisé (séparateurs FR, `tabular-nums` côté CSS).
- * Sans `decimales` : formatage libre Intl ; avec : nombre fixe de décimales.
+ * Second argument polymorphe :
+ *   - absent  → formatage libre Intl ;
+ *   - `number` → nombre fixe de décimales (min = max) ;
+ *   - `Intl.NumberFormatOptions` → options passées telles quelles (compat magasin).
  */
-export function formatNumber(n: Nullable<number>, decimales?: number): string {
+export function formatNumber(
+  n: Nullable<number>,
+  arg?: number | Intl.NumberFormatOptions,
+): string {
   if (n === null || n === undefined || Number.isNaN(n)) return PLACEHOLDER;
-  if (decimales === undefined) return nombreLibre.format(n);
-  let fmt = nombreParDecimales.get(decimales);
-  if (!fmt) {
-    fmt = new Intl.NumberFormat(LOCALE, {
-      minimumFractionDigits: decimales,
-      maximumFractionDigits: decimales,
-    });
-    nombreParDecimales.set(decimales, fmt);
+  if (arg === undefined) return nombreLibre.format(n);
+  if (typeof arg === 'number') {
+    let fmt = nombreParDecimales.get(arg);
+    if (!fmt) {
+      fmt = new Intl.NumberFormat(LOCALE, {
+        minimumFractionDigits: arg,
+        maximumFractionDigits: arg,
+      });
+      nombreParDecimales.set(arg, fmt);
+    }
+    return fmt.format(n);
   }
-  return fmt.format(n);
+  return new Intl.NumberFormat(LOCALE, arg).format(n);
+}
+
+/** Entier localisé (sans décimales) — alias sémantique de `formatQuantite` (compat magasin). */
+export function formatInteger(n: Nullable<number>): string {
+  return formatQuantite(n);
+}
+
+/** Date + heure « JJ/MM/AAAA HH:MM » — raccourci de `formatDate(d, 'datetime')` (compat magasin). */
+export function formatDateTime(d: Nullable<Date | string>): string {
+  return formatDate(d, 'datetime');
 }
 
 /** Montant en euros (« 1 234,56 € »). */
@@ -126,6 +145,24 @@ export function formatPourcent(n: Nullable<number>, decimales = 0): string {
  */
 export const dataTableTextesFR = {
   noRecordsText: 'Aucun enregistrement',
+  loadingText: 'Chargement…',
+  recordsPerPageLabel: 'Lignes par page',
+  paginationText: ({ from, to, totalRecords }: { from: number; to: number; totalRecords: number }) =>
+    `${from}–${to} sur ${totalRecords}`,
+} as const;
+
+/**
+ * Variante SCINDÉE (compat magasin) — `dataTableFr` porte le texte toujours sûr
+ * (table non paginée), `dataTableFrPagination` les labels de l'union pagination.
+ * Spreader `dataTableFrPagination` UNIQUEMENT sur une table paginée (sinon
+ * TypeScript exige les props page/totalRecords…). Cf. `dataTableTextesFR` pour
+ * l'objet fusionné utilisé côté pépinière.
+ */
+export const dataTableFr = {
+  noRecordsText: 'Aucun enregistrement',
+} as const;
+
+export const dataTableFrPagination = {
   loadingText: 'Chargement…',
   recordsPerPageLabel: 'Lignes par page',
   paginationText: ({ from, to, totalRecords }: { from: number; to: number; totalRecords: number }) =>

@@ -7,7 +7,7 @@
  * `PageBreadcrumb`, `FittedDataTable`, `notify`, `openConfirm`, hooks tables,
  * `useSaveShortcut`. Subpaths : `/format`, `/canon`, `/spatial`. Règles : DESIGN.md.
  */
-export const GRADILIS_UI_VERSION = '0.3.0';
+export const GRADILIS_UI_VERSION = '0.4.0';
 
 // Thème : factory agnostique (API cible).
 export {
@@ -25,6 +25,23 @@ export {
   semError,
   semInfo,
 } from './colors.js';
+
+// Format FR — aussi disponible via le subpath `@gradilis/ui/format`. Ré-exporté
+// ici pour les consommateurs qui importent le formatage depuis le barrel (magasin).
+export {
+  PLACEHOLDER,
+  formatDate,
+  formatDateTime,
+  formatNumber,
+  formatInteger,
+  formatEUR,
+  formatQuantite,
+  formatPourcent,
+  dataTableFr,
+  dataTableFrPagination,
+  dataTableTextesFR,
+  setupLocale,
+} from './format/index.js';
 
 // Compat transitoire — thème pépinière prêt à l'emploi + rampes de marque.
 // Relocalisés dans l'app pépinière à l'Étape 4 (cf. tokens/pepiniere.ts).
