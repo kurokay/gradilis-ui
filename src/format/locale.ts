@@ -1,7 +1,7 @@
 import dayjs from 'dayjs';
-import 'dayjs/locale/fr';
-import customParseFormat from 'dayjs/plugin/customParseFormat';
-import localizedFormat from 'dayjs/plugin/localizedFormat';
+import 'dayjs/locale/fr.js';
+import customParseFormat from 'dayjs/plugin/customParseFormat.js';
+import localizedFormat from 'dayjs/plugin/localizedFormat.js';
 
 /**
  * Initialisation de la locale FR (GUIDELINES §5) — à appeler UNE fois dans
