@@ -46,10 +46,16 @@ describe('rampes §3.2 (recopie littérale, contrôle diff contre les guidelines
 });
 
 describe('gradilisTheme', () => {
-  it('bouton primaire = gradilisGreen idx 7 #00752D (§3.2, AA 5,86:1)', () => {
+  // ⚠️ Ce fichier est EXCLU de vitest (cf. `vitest.config.ts`) depuis le
+  // bootstrap du socle : il n'a jamais tourné. L'assertion ci-dessous affirmait
+  // encore `dark: 7` alors que la valeur a changé le 2026-07-31 — elle serait
+  // passée au rouge si elle avait été exécutée. Les invariants qui comptent
+  // vraiment (contraste) vivent désormais dans `contrast.test.ts`, lui EXÉCUTÉ.
+  it('bouton primaire = gradilisGreen (clair idx 7 · sombre idx 3)', () => {
     expect(gradilisTheme.primaryColor).toBe('gradilisGreen');
-    expect(gradilisTheme.primaryShade).toEqual({ light: 7, dark: 7 });
+    expect(gradilisTheme.primaryShade).toEqual({ light: 7, dark: 3 });
     expect(gradilisTheme.colors?.gradilisGreen?.[7]).toBe('#00752D');
+    expect(gradilisTheme.colors?.gradilisGreen?.[3]).toBe('#77C293');
   });
 
   it('expose les 4 rampes de marque et les 4 rampes sémantiques', () => {
