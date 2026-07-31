@@ -1,9 +1,14 @@
 import {
   createTheme,
+  defaultVariantColorsResolver,
+  getPrimaryShade,
+  isLightColor,
+  parseThemeColor,
   rem,
   type CSSVariablesResolver,
   type MantineColorsTuple,
   type MantineThemeOverride,
+  type VariantColorsResolver,
 } from '@mantine/core';
 import {
   gradilisGray,
@@ -62,6 +67,59 @@ const SEMANTIC_RAMPS = {
 } as const;
 
 /**
+ * Résolveur de variantes — corrige `autoContrast` sur les contrôles PLEINS.
+ *
+ * ⚠️⚠️ Sans ça, `primaryShade` ne peut pas différer entre les deux schémas, et
+ * le piège est SILENCIEUX. Mécanique exacte (Mantine v9) :
+ *
+ *   - le FOND d'un contrôle plein est une variable CSS, donc résolue PAR SCHÉMA :
+ *     `var(--mantine-color-<c>-filled)` vaut la teinte sombre en sombre ;
+ *   - la couleur du LIBELLÉ, elle, est décidée UNE SEULE FOIS à la construction
+ *     du style, par `parseThemeColor`, qui appelle
+ *     `getPrimaryShade(theme, colorScheme || 'light')` — et `colorScheme` n'est
+ *     pas transmis ici, donc c'est TOUJOURS l'indice du schéma CLAIR qui décide.
+ *
+ * Conséquence : dès que les deux indices tombent de part et d'autre de
+ * `luminanceThreshold`, le libellé est choisi pour un fond qui n'est pas celui
+ * qui sera peint. Mesuré : fond ampOlive[3] #aeab94 (clair) avec un libellé
+ * BLANC choisi d'après ampOlive[7] #555232 (foncé) → **2,32:1**, sur ~490
+ * éléments. Rien ne le signale : ni type, ni avertissement, ni test.
+ *
+ * On délègue donc tout au résolveur par défaut, et on ne réécrit QUE la couleur
+ * du libellé des variantes `filled` sans indice explicite, en la calculant pour
+ * CHAQUE schéma et en laissant le CSS trancher au rendu via `light-dark()`.
+ */
+const gradilisVariantColors: VariantColorsResolver = (input) => {
+  const base = defaultVariantColorsResolver(input);
+  if (input.variant !== 'filled') return base;
+
+  const parsed = parseThemeColor({ color: input.color, theme: input.theme });
+  // Un indice explicite (`color="erreur.7"`) est un choix délibéré de l'appelant :
+  // il vaut pour les deux schémas, le défaut Mantine est alors correct.
+  if (!parsed.isThemeColor || parsed.shade !== undefined) return base;
+
+  const autoContrast =
+    typeof input.autoContrast === 'boolean' ? input.autoContrast : input.theme.autoContrast;
+  if (!autoContrast) return base;
+
+  const ramp = input.theme.colors[parsed.color];
+  if (!ramp) return base;
+
+  const libelle = (scheme: 'light' | 'dark') =>
+    isLightColor(ramp[getPrimaryShade(input.theme, scheme)], input.theme.luminanceThreshold)
+      ? 'var(--mantine-color-black)'
+      : 'var(--mantine-color-white)';
+
+  const clair = libelle('light');
+  const sombre = libelle('dark');
+  return {
+    ...base,
+    // Identiques → pas de `light-dark()` inutile dans le style calculé.
+    color: clair === sombre ? clair : `light-dark(${clair}, ${sombre})`,
+  };
+};
+
+/**
  * Fabrique le thème Mantine Gradilis à partir des tokens de marque.
  * La structure et les sémantiques viennent du socle ; l'app n'apporte que son
  * identité colorée et ses polices.
@@ -86,9 +144,12 @@ export function createGradilisTheme(tokens: GradilisThemeTokens): MantineThemeOv
     //     ampOlive[3]      #aeab94  forme 6,69:1  libellé noir 9,05:1
     //     gradilisGreen[3] #77C293  forme 7,33:1  libellé noir 9,92:1
     // C'est le patron standard du mode sombre (contrôle clair, libellé foncé).
+    // ⚠️ Ce couple d'indices n'est tenable QUE grâce à `gradilisVariantColors`
+    // ci-dessus : sans lui, le libellé serait choisi d'après l'indice CLAIR.
     primaryShade: { light: 7, dark: 3 },
     autoContrast: true,
     luminanceThreshold: 0.3,
+    variantColorResolver: gradilisVariantColors,
     // a11y : respecte `prefers-reduced-motion` (WCAG 2.3.3).
     respectReducedMotion: true,
 

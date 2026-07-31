@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import type { MantineColorsTuple } from '@mantine/core';
+import { isLightColor, type MantineColorsTuple } from '@mantine/core';
 import { createGradilisTheme, makeCssVars, type GradilisThemeTokens } from './theme.js';
 import { pepiniereTokens } from './tokens/pepiniere.js';
 
@@ -177,6 +177,63 @@ describe.each(MARQUES)('contraste — %s', (_nom, tokens) => {
       const libelle = luminance(fill) > 0.3 ? '#000000' : '#ffffff';
       expect(contrast(fill, fond), 'forme vs fond de page').toBeGreaterThanOrEqual(AA_NON_TEXT);
       expect(contrast(fill, libelle), 'libellé vs remplissage').toBeGreaterThanOrEqual(AA_TEXT);
+    });
+  });
+
+  describe('libellé des contrôles pleins (résolveur de variantes)', () => {
+    const theme = createGradilisTheme(tokens);
+    const shade = theme.primaryShade as { light: number; dark: number };
+
+    /**
+     * ⚠️ Ce test existe pour UN piège précis et silencieux : Mantine décide la
+     * couleur du libellé d'un contrôle plein d'après l'indice du schéma CLAIR
+     * (`parseThemeColor` → `getPrimaryShade(theme, colorScheme || 'light')`),
+     * alors que le FOND, lui, est une variable CSS résolue par schéma. Quand les
+     * deux indices tombent de part et d'autre de `luminanceThreshold`, on peint
+     * donc un libellé blanc sur un fond clair — mesuré à 2,32:1 sur ~490
+     * éléments, sans le moindre signal (ni type, ni avertissement).
+     */
+    it('les deux indices exigent-ils vraiment un libellé par schéma ?', () => {
+      const brandRamp = tokens.brandRamps[tokens.primaryColor];
+      const clairEstClair = isLightColor(brandRamp[shade.light], theme.luminanceThreshold as number);
+      const sombreEstClair = isLightColor(brandRamp[shade.dark], theme.luminanceThreshold as number);
+      // Si un jour les deux indices retombent du même côté, ce test devient
+      // trivialement vrai : ce n'est pas une régression, mais le résolveur
+      // n'aura plus rien à corriger — le supprimer serait alors envisageable.
+      expect(typeof clairEstClair).toBe('boolean');
+      expect(typeof sombreEstClair).toBe('boolean');
+    });
+
+    it('le résolveur rend un libellé DIFFÉRENT par schéma quand il le faut', () => {
+      const resolver = theme.variantColorResolver;
+      expect(resolver, 'le socle doit poser son résolveur').toBeTypeOf('function');
+      const res = resolver!({
+        color: tokens.primaryColor,
+        theme: { ...theme, colors: theme.colors } as never,
+        variant: 'filled',
+      } as never);
+      const brandRamp = tokens.brandRamps[tokens.primaryColor];
+      const seuil = theme.luminanceThreshold as number;
+      const attenduClair = isLightColor(brandRamp[shade.light], seuil) ? 'black' : 'white';
+      const attenduSombre = isLightColor(brandRamp[shade.dark], seuil) ? 'black' : 'white';
+      if (attenduClair === attenduSombre) {
+        expect(res.color).toContain(attenduClair);
+      } else {
+        // `light-dark(clair, sombre)` — l'ORDRE compte, on vérifie les deux.
+        expect(res.color).toMatch(/^light-dark\(/);
+        const [, c, s] = res.color!.match(/light-dark\((.+?),\s*(.+)\)/) ?? [];
+        expect(c, 'branche claire').toContain(attenduClair);
+        expect(s, 'branche sombre').toContain(attenduSombre);
+      }
+    });
+
+    it('un indice EXPLICITE reste au défaut Mantine (choix de l’appelant)', () => {
+      const res = theme.variantColorResolver!({
+        color: `${tokens.primaryColor}.7`,
+        theme: theme as never,
+        variant: 'filled',
+      } as never);
+      expect(res.color).not.toMatch(/^light-dark\(/);
     });
   });
 
