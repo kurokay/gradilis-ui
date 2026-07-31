@@ -173,8 +173,8 @@ describe.each(MARQUES)('contraste — %s', (_nom, tokens) => {
      * l'indice sombre (388 échecs mesurés) — elle ne se négocie pas.
      */
     it.each([
-      ['clair', 'light' as const, LIGHT_BODY],
-      ['sombre', 'dark' as const, DARK_BODY],
+      ['clair', 'light' as const],
+      ['sombre', 'dark' as const],
     ])('en %s : le LIBELLÉ tient AA', (_s, scheme) => {
       const fill = brand[shade[scheme]];
       const libelle = luminance(fill) > 0.3 ? '#000000' : '#ffffff';

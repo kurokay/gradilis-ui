@@ -46,12 +46,13 @@ describe('rampes §3.2 (recopie littérale, contrôle diff contre les guidelines
 });
 
 describe('gradilisTheme', () => {
-  // ⚠️ Ce fichier est EXCLU de vitest (cf. `vitest.config.ts`) depuis le
-  // bootstrap du socle : il n'a jamais tourné. L'assertion ci-dessous affirmait
-  // encore `dark: 7` alors que la valeur a changé le 2026-07-31 — elle serait
-  // passée au rouge si elle avait été exécutée. Les invariants qui comptent
-  // vraiment (contraste) vivent désormais dans `contrast.test.ts`, lui EXÉCUTÉ.
-  it('bouton primaire = gradilisGreen (clair idx 7 · sombre idx 3)', () => {
+  // ⚠️⚠️ Ce fichier est EXCLU de vitest (cf. `vitest.config.ts`) depuis le
+  // bootstrap du socle : il n'a JAMAIS tourné. Ce n'est pas théorique — en
+  // juillet 2026 son assertion `primaryShade` a été fausse pendant toute la
+  // durée d'un chantier sans que rien ne le signale. Les invariants qui
+  // comptent (contraste) vivent dans `contrast.test.ts`, lui EXÉCUTÉ ; ne rien
+  // ajouter ici en croyant que c'est protégé.
+  it('bouton primaire = gradilisGreen, idx 7 dans les DEUX schémas', () => {
     expect(gradilisTheme.primaryColor).toBe('gradilisGreen');
     expect(gradilisTheme.primaryShade).toEqual({ light: 7, dark: 7 });
     expect(gradilisTheme.colors?.gradilisGreen?.[7]).toBe('#00752D');
