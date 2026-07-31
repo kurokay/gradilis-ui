@@ -182,6 +182,7 @@ export function makeCssVars(
       '--gradilis-bg-brand': brand[0],
       '--gradilis-bg-danger': semError[0],
       '--gradilis-bg-warning': semWarning[0],
+      '--gradilis-bg-success': semSuccess[0],
       '--gradilis-bg-info': semInfo[0],
       '--gradilis-border': gradilisGray[2],
       '--gradilis-border-muted': gradilisGray[1],
@@ -228,6 +229,7 @@ export function makeCssVars(
       '--gradilis-bg-brand': '#33322d', // olive 16 %  · 1,21:1
       '--gradilis-bg-danger': '#402e29', // terracotta 16 % · 1,21:1
       '--gradilis-bg-warning': '#4f3f25', // ambre 21 %  · 1,53:1
+      '--gradilis-bg-success': '#2d3e30', // vert 16 %   · 1,36:1
       '--gradilis-bg-info': '#333435', // ardoise 16 % · 1,24:1
       '--gradilis-border': '#3e3e3e', // 1,45:1 (aligné sur Mantine dark-4)
       '--gradilis-border-muted': '#313131', // 1,19:1

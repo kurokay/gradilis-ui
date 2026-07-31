@@ -123,16 +123,16 @@ describe.each(MARQUES)('contraste — %s', (_nom, tokens) => {
       expect(contrast(dark['--gradilis-bg-subtle'], DARK_BODY)).toBeGreaterThan(1.15);
     });
 
-    it('les 5 fonds sémantiques sont DISTINCTS deux à deux', () => {
+    it('les 6 fonds sémantiques sont DISTINCTS deux à deux', () => {
       // Ils s'écrasaient sur 2 valeurs (brand == danger == warning) : toute
       // l'information portée par la couleur de fond disparaissait en sombre.
-      const cles = ['subtle', 'brand', 'danger', 'warning', 'info'] as const;
+      const cles = ['subtle', 'brand', 'danger', 'warning', 'success', 'info'] as const;
       const valeurs = cles.map((k) => dark[`--gradilis-bg-${k}`]);
       expect(new Set(valeurs).size).toBe(cles.length);
     });
 
     it('le texte reste lisible sur CHAQUE fond sémantique', () => {
-      for (const k of ['subtle', 'brand', 'danger', 'warning', 'info']) {
+      for (const k of ['subtle', 'brand', 'danger', 'warning', 'success', 'info']) {
         const fond = dark[`--gradilis-bg-${k}`];
         expect(contrast(DARK_TEXT, fond), `texte sur bg-${k}`).toBeGreaterThanOrEqual(AA_TEXT);
         expect(
