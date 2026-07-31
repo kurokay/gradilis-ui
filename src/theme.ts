@@ -144,9 +144,31 @@ export function createGradilisTheme(tokens: GradilisThemeTokens): MantineThemeOv
     //     ampOlive[3]      #aeab94  forme 6,69:1  libellé noir 9,05:1
     //     gradilisGreen[3] #77C293  forme 7,33:1  libellé noir 9,92:1
     // C'est le patron standard du mode sombre (contrôle clair, libellé foncé).
-    // ⚠️ Ce couple d'indices n'est tenable QUE grâce à `gradilisVariantColors`
-    // ci-dessus : sans lui, le libellé serait choisi d'après l'indice CLAIR.
-    primaryShade: { light: 7, dark: 3 },
+    // ⚠️⚠️ NE PAS éclaircir l'indice SOMBRE — essayé, mesuré, ANNULÉ.
+    //
+    // Le raisonnement qui pousse à le faire est juste : sur fond sombre, l'idx 7
+    // ne donne au bouton que 1,95:1 de forme contre la page (WCAG 1.4.11 en
+    // demande 3), et le patron habituel du mode sombre est un contrôle CLAIR à
+    // libellé foncé. Un passage à `dark: 3` a bien porté la forme à 6,69:1.
+    //
+    // Il a aussi produit **388 nouveaux échecs AA de TEXTE**, mesurés. Deux
+    // causes, la seconde rédhibitoire :
+    //   1. le libellé était choisi d'après l'indice CLAIR (corrigé par
+    //      `gradilisVariantColors` ci-dessus) ;
+    //   2. **45 règles de `@mantine/core/styles.css` écrivent
+    //      `color: var(--mantine-color-white)` EN DUR** sur des fonds dérivés de
+    //      `-filled` (`Indicator`, entre autres). Aucun résolveur de thème ne les
+    //      atteint. Mantine tient pour acquis que `-filled` est une couleur
+    //      SOMBRE dans les deux schémas ; un indice clair se bat contre le
+    //      framework, et on perd.
+    //
+    // On garde donc l'idx 7 dans les deux schémas : le libellé tient largement
+    // (7,96:1 olive, 5,86:1 vert), la forme reste sous le seuil non textuel —
+    // c'est un compromis ASSUMÉ et documenté, pas un oubli. Le bouton reste
+    // identifiable par son libellé, qui est du texte à part entière.
+    // ⚠️ `gradilisVariantColors` est conservé : il est neutre tant que les deux
+    // indices coïncident, et c'est le filet si l'un d'eux bouge un jour.
+    primaryShade: { light: 7, dark: 7 },
     autoContrast: true,
     luminanceThreshold: 0.3,
     variantColorResolver: gradilisVariantColors,

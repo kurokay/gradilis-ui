@@ -53,7 +53,7 @@ describe('gradilisTheme', () => {
   // vraiment (contraste) vivent désormais dans `contrast.test.ts`, lui EXÉCUTÉ.
   it('bouton primaire = gradilisGreen (clair idx 7 · sombre idx 3)', () => {
     expect(gradilisTheme.primaryColor).toBe('gradilisGreen');
-    expect(gradilisTheme.primaryShade).toEqual({ light: 7, dark: 3 });
+    expect(gradilisTheme.primaryShade).toEqual({ light: 7, dark: 7 });
     expect(gradilisTheme.colors?.gradilisGreen?.[7]).toBe('#00752D');
     expect(gradilisTheme.colors?.gradilisGreen?.[3]).toBe('#77C293');
   });

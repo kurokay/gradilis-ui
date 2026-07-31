@@ -167,16 +167,31 @@ describe.each(MARQUES)('contraste — %s', (_nom, tokens) => {
     const theme = createGradilisTheme(tokens);
     const shade = theme.primaryShade as { light: number; dark: number };
 
+    /**
+     * Le LIBELLÉ est un invariant dur : c'est du texte, seuil 4,5:1, dans les
+     * deux schémas. C'est cette moitié-là qui a cassé quand on a éclairci
+     * l'indice sombre (388 échecs mesurés) — elle ne se négocie pas.
+     */
     it.each([
-      ['clair', shade.light, LIGHT_BODY],
-      ['sombre', shade.dark, DARK_BODY],
-    ])('en %s : la FORME se détache et le LIBELLÉ tient AA', (_s, idx, fond) => {
-      const fill = brand[idx];
-      // `autoContrast` + `luminanceThreshold: 0.3` : au-dessus du seuil le
-      // libellé bascule en noir, en dessous il reste blanc.
+      ['clair', 'light' as const, LIGHT_BODY],
+      ['sombre', 'dark' as const, DARK_BODY],
+    ])('en %s : le LIBELLÉ tient AA', (_s, scheme) => {
+      const fill = brand[shade[scheme]];
       const libelle = luminance(fill) > 0.3 ? '#000000' : '#ffffff';
-      expect(contrast(fill, fond), 'forme vs fond de page').toBeGreaterThanOrEqual(AA_NON_TEXT);
       expect(contrast(fill, libelle), 'libellé vs remplissage').toBeGreaterThanOrEqual(AA_TEXT);
+    });
+
+    /**
+     * ⚠️ La FORME n'est exigée qu'en mode CLAIR, et c'est un compromis ASSUMÉ,
+     * pas un trou dans le garde-fou. En sombre, la seule façon d'atteindre 3:1
+     * serait un remplissage clair — or 45 règles de `@mantine/core/styles.css`
+     * écrivent `color: var(--mantine-color-white)` en dur sur les fonds dérivés
+     * de `-filled`, hors de portée de tout résolveur de thème. On préfère un
+     * bouton qui se détache mal à un bouton dont on ne lit pas le libellé.
+     * Voir la note de `primaryShade` dans `theme.ts`.
+     */
+    it('en clair : la FORME du bouton se détache du fond', () => {
+      expect(contrast(brand[shade.light], LIGHT_BODY)).toBeGreaterThanOrEqual(AA_NON_TEXT);
     });
   });
 
