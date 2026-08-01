@@ -10,13 +10,12 @@ import { Breadcrumbs, Anchor, Text, Group } from '@mantine/core';
 import { useMediaQuery } from '@mantine/hooks';
 import { IconChevronLeft } from '@tabler/icons-react';
 import { Link } from 'react-router-dom';
+import { useGradilisLabels } from '../lib/labels.js';
 
 export interface Crumb {
   label: string;
   to?: string; // présent → lien cliquable ; absent → segment courant (non cliquable)
 }
-
-const HOME: Crumb = { label: 'Accueil', to: '/' };
 
 /**
  * « Accueil » (→ '/') est ajouté automatiquement en tête ; `items` ne contient
@@ -28,14 +27,19 @@ const HOME: Crumb = { label: 'Accueil', to: '/' };
  *   de la piste complète réempilée sur plusieurs lignes.
  */
 export function PageBreadcrumb({ items }: { items: Crumb[] }) {
-  const all: Crumb[] = [HOME, ...items];
+  // ⚠️ Le segment racine et le nom du landmark sont INJECTABLES (`GradilisLabelsProvider`),
+  // défauts FR identiques à l'historique. Sans ça, une app traduite affichait « Accueil »
+  // sous une navigation en « Inicio » — cas réel relevé en recette côté magasin.
+  const labels = useGradilisLabels().breadcrumb;
+  const home: Crumb = { label: labels.home, to: '/' };
+  const all: Crumb[] = [home, ...items];
   const isSmall = useMediaQuery('(max-width: 768px)') ?? false;
 
   if (isSmall) {
     // Ancêtre cliquable le plus proche (hors segment courant), sinon retour à l'accueil.
-    const parent = [...all.slice(0, -1)].reverse().find((c) => c.to) ?? HOME;
+    const parent = [...all.slice(0, -1)].reverse().find((c) => c.to) ?? home;
     return (
-      <nav aria-label="Fil d'Ariane">
+      <nav aria-label={labels.landmark}>
         <Anchor component={Link} to={parent.to ?? '/'} size="sm" mb="xs" display="inline-block">
           <Group gap={4} wrap="nowrap">
             <IconChevronLeft size={14} />
@@ -47,7 +51,7 @@ export function PageBreadcrumb({ items }: { items: Crumb[] }) {
   }
 
   return (
-    <nav aria-label="Fil d'Ariane">
+    <nav aria-label={labels.landmark}>
       <Breadcrumbs mb="xs" separator={<span aria-hidden="true">/</span>}>
         {all.map((c, i) => {
           // `aria-current="page"` doit désigner UN SEUL élément : le segment courant

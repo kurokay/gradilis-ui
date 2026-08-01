@@ -72,6 +72,16 @@ export {
   type NotifyOptions,
 } from './lib/notify.js';
 export { openConfirm } from './lib/confirmModal.js';
+// Libellés du socle — point d'injection (dé-brandification étape 1).
+// ⚠️ OPT-IN : sans provider, les primitives rendent les chaînes FR historiques
+// à l'identique. C'est ce qui garantit que Pépinière ne bouge pas d'un pixel.
+export {
+  GradilisLabelsProvider,
+  useGradilisLabels,
+  DEFAULT_LABELS,
+  type GradilisLabels,
+  type GradilisLabelsOverride,
+} from './lib/labels.js';
 export { useTablePrefs } from './hooks/useTablePrefs.js';
 export { useTableAutoFit, type TableAutoFit } from './hooks/useTableAutoFit.js';
 export { useAutoPageSize, computeAutoFit } from './hooks/useAutoPageSize.js';

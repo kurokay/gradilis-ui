@@ -112,3 +112,64 @@ Modèles rendus côte à côte : `/app/canon/etats`.
   + Stylelint (`color-no-hex`). `npm run typecheck`, `npm test`, `npm run build` : CI (M.4).
 - Checklist « fini » par écran : guidelines §9 (tokens only, 4 états, AA, clavier,
   responsive, tabular-nums + format FR, comparé à `/app/canon`, tests verts).
+
+---
+
+## 10. Agnosticisme de marque — état du chantier (2026-08-01)
+
+**Le socle sert DEUX applications** : `gradilis_pepiniere_app` (qui consomme les
+primitives `notify`/`Num`/`PageBreadcrumb`/`FittedDataTable`/`openConfirm`) et
+`gradilis_magasin` (qui ne consomme aujourd'hui que les helpers de format et la
+factory de thème). Tant qu'une seule app utilisait les primitives, leurs textes
+et couleurs en dur ne se voyaient pas. Ils bloquaient l'adoption par la seconde.
+
+### Ce qui est FAIT (étape 1)
+
+| Sujet | Avant | Maintenant |
+|---|---|---|
+| Bouton « Auto » de `FittedDataTable` | `color="gradilisGreen"` | pas de prop `color` → suit `theme.primaryColor` |
+| Libellés de `PageBreadcrumb` / bouton « Auto » | chaînes FR en dur | `GradilisLabelsProvider` (défauts FR **identiques**) |
+
+⚠️ **Les deux changements sont NON CASSANTS pour Pépinière, par construction** :
+sa primaire EST `gradilisGreen` (vérifié dans ses tokens), et sans provider les
+libellés rendent les chaînes historiques au caractère près. Prouvé par
+`src/lib/labels.test.tsx` + `src/components/primitives.test.tsx` (qui attendait
+déjà « Accueil » et « Fil d'Ariane » et passe toujours). **Pépinière n'a rien à
+faire**, et n'a d'ailleurs pas été modifiée.
+
+⚠️ **`color="gradilisGreen"` était un défaut MUET**, pas cosmétique : Mantine ne
+rejette pas un nom de couleur inconnu du thème — `parseThemeColor` fait
+`isThemeColor = _color in theme.colors` et, si c'est faux, renvoie la chaîne
+**telle quelle comme valeur CSS**. Dans le magasin, `background: gradilisGreen`
+est une déclaration invalide, silencieusement ignorée : le bouton perdait sa
+couleur sans erreur, sans warning, sans test rouge.
+
+### Ce qui N'A PAS besoin d'être fait — ne pas y perdre du temps
+
+**Les couleurs sémantiques sont DÉJÀ agnostiques.** `createGradilisTheme`
+enregistre `SEMANTIC_RAMPS` (`succes`/`alerte`/`erreur`/`info`) dans le thème de
+**toute** application passant par la factory. Un composant du socle qui écrit
+`color="erreur"` est donc portable par construction. ⚠️ Un premier diagnostic a
+conclu l'inverse (« les toasts perdraient leur couleur dans le magasin ») : c'est
+FAUX, et l'erreur venait de n'avoir pas lu la factory. Seules les rampes de
+**MARQUE** (`gradilisGreen`, `ampOlive`…) sont non portables.
+
+### Ce qui RESTE (étapes 2 à 4) — dans cet ordre, il n'est pas négociable
+
+2. **Choisir le vocabulaire sémantique canonique.** Aujourd'hui le socle impose
+   les noms FR (`succes`/`alerte`/`erreur`), le magasin ajoute des alias anglais
+   (`success`/`warning`/`error`) sur les mêmes rampes, et utilise en plus sa
+   rampe de marque `ampBrique` pour les erreurs. Trancher = faire migrer le
+   perdant. **Décision produit, en attente de Lucas.**
+3. **Rendre injectable la couleur d'erreur de `notify`** (le magasin veut sa
+   brique de marque, pas le rouge sémantique). `notify` est un module impératif,
+   pas un composant : il lui faut un `configure*` de niveau module, pas un
+   contexte React.
+4. **Remonter les extensions du magasin**, qui est EN AVANCE sur le socle pour
+   trois briques : classe `confidential-value` de `<Num>` (mode confidentiel),
+   prop `helpTourId` de `PageBreadcrumb` (micro-tours), extraction des `data-*`
+   de `FittedDataTable` (ancres de tours). C'est un BACKPORT, pas une adoption.
+5. **Seulement là**, basculer les imports du magasin sur le socle.
+
+⚠️ Faire 5 avant 4, c'est faire perdre au magasin son i18n, son mode confidentiel
+et ses ancres de tours — trois fonctionnalités livrées et testées.

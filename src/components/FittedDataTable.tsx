@@ -6,11 +6,15 @@
  *
  * Vendoré de `gradilis_magasin/frontend/src/components/FittedDataTable.tsx` (DM-7).
  * Adaptations Pépinière : textes FR via `dataTableTextesFR` (module @gradilis/ui/format,
- * M.3 — objet unique là où le magasin en avait deux) ; bouton « Auto » en
- * `gradilisGreen` (primaire §3.2) ; les props `height`/`renderPagination` de
+ * M.3 — objet unique là où le magasin en avait deux) ; les props `height`/`renderPagination` de
  * l'appelant ne sont plus destructurées-ignorées (variables inutilisées sous
  * typescript-eslint strict) — elles sont simplement écrasées par les clés posées
  * APRÈS le spread de `rest` dans `tableProps`, même résultat.
+ *
+ * ⚠️ Le bouton « Auto » ne nomme PLUS de couleur : il suit `theme.primaryColor`,
+ * donc la marque de chaque app. Il était figé sur `gradilisGreen`, rampe absente
+ * du thème du magasin — voir le commentaire sur place, le mode d'échec est muet.
+ * Ses libellés passent par `GradilisLabelsProvider` (défauts FR historiques).
  *
  * Usage : remplacer `<DataTable ... />` par `<FittedDataTable fit={fit} ... />`, où
  * `fit` provient de `useTablePrefs(key, { autoFit: true })`. Les autres props sont
@@ -34,6 +38,7 @@ import {
   type DataTablePaginationRenderContext,
 } from 'mantine-datatable';
 import { dataTableTextesFR } from '../format/index.js';
+import { useGradilisLabels } from '../lib/labels.js';
 import type { TableAutoFit } from '../hooks/useTableAutoFit.js';
 
 type FittedDataTableProps<T> = DataTableProps<T> & {
@@ -42,19 +47,28 @@ type FittedDataTableProps<T> = DataTableProps<T> & {
 };
 
 function AutoButton({ active, onActivate }: { active: boolean; onActivate: () => void }) {
+  // ⚠️ Libellés INJECTABLES (`GradilisLabelsProvider`), défauts FR historiques.
+  const labels = useGradilisLabels().autoFit;
   return (
-    <Tooltip label="Ajuster le nombre de lignes à la hauteur de l'écran" withArrow>
+    <Tooltip label={labels.tooltip} withArrow>
       <Button
         size="compact-xs"
         radius="xl"
-        color="gradilisGreen"
+        // ⚠️ PAS de `color="gradilisGreen"` : c'était une rampe de MARQUE (Pépinière),
+        // ABSENTE du thème de `gradilis_magasin`. Mantine ne rejette pas un nom de
+        // couleur inconnu — `parseThemeColor` le renvoie tel quel comme valeur CSS,
+        // donc `background: gradilisGreen` = déclaration invalide, silencieusement
+        // ignorée : le bouton perdait sa couleur sans la moindre erreur. Sans prop
+        // `color`, Mantine prend `theme.primaryColor`, donc la primaire de CHAQUE
+        // app — `gradilisGreen` chez Pépinière (rendu identique, vérifié dans ses
+        // tokens) et `ampOlive` au magasin. Un socle ne nomme pas une marque.
         variant={active ? 'light' : 'default'}
         onClick={onActivate}
         leftSection={<IconArrowAutofitHeight size={14} />}
-        aria-label="Ajuster automatiquement le nombre de lignes"
+        aria-label={labels.ariaLabel}
         aria-pressed={active}
       >
-        Auto
+        {labels.label}
       </Button>
     </Tooltip>
   );
