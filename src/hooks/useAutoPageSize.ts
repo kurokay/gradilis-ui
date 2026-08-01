@@ -3,9 +3,15 @@
  * restante du viewport, pour qu'une `<DataTable>` (mantine-datatable) se termine
  * proprement en bas de page (footer de pagination ancré, sans scroll du document).
  *
- * Vendoré de `gradilis_magasin/frontend/src/hooks/useAutoPageSize.ts` (DM-7),
- * inchangé (le layout cible pose `id="main-content"` sur `AppShell.Main`,
- * cf. CanonAppShell).
+ * Vendoré de `gradilis_magasin/frontend/src/hooks/useAutoPageSize.ts` (DM-7)
+ * (le layout cible pose `id="main-content"` sur `AppShell.Main`, cf. CanonAppShell).
+ * ⚠️ **PAS « inchangé »**, contrairement à ce que cet en-tête a longtemps affirmé :
+ * l'écriture de `onRowHeightRef.current` est enveloppée ici dans un
+ * `useIsomorphicLayoutEffect`, là où le magasin l'écrit NUE pendant le rendu.
+ * C'est un accommodement de lint amont (`react-hooks/refs`), **pas un correctif
+ * de bug** — et il n'est pas strictement supérieur : différer l'écriture rend la
+ * ref périmée pendant la passe de rendu en cours. Divergence assumée, à
+ * reporter au magasin ou à retirer d'un même mouvement, jamais à ignorer.
  *
  * Principe : plutôt que d'additionner la « chrome » très variable au-dessus de la
  * table (fil d'Ariane, bandeaux, onglets, cartes de filtres), on MESURE la position

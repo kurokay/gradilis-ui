@@ -2,9 +2,16 @@
  * Formatage localisé — fr-FR centralisé (GUIDELINES §5).
  *
  * Vendoré du `format.ts` de `gradilis_magasin/packages/ui` (DM-7), signatures
- * figées par le plan Chantier M §5. Source unique des helpers `Intl` : aucun
- * formatage FR ne doit être réimplémenté ailleurs (§10 — la règle lint M.4
- * interdit `new Intl.` hors de `packages/ui/src/format/`). Les montants
+ * figées par le plan Chantier M §5.
+ * ⚠️ **`gradilis_magasin/packages/ui` N'EXISTE PLUS** (répertoire supprimé de ce
+ * dépôt). Le pointeur ci-dessus est une origine HISTORIQUE, à ne pas suivre : il
+ * n'y a plus rien à y comparer. Contrairement aux autres briques vendorées, ce
+ * module n'a pas de jumeau vivant côté magasin — celui-ci importe bel et bien
+ * `formatDate`/`formatEUR`/… d'ici (~50 fichiers chacun), donc **cette copie est
+ * la source unique**, pas un double.
+ * Source unique des helpers `Intl` : aucun formatage FR ne doit être
+ * réimplémenté ailleurs (§10 — la règle lint M.4 interdit `new Intl.` hors de
+ * ce module). Les montants
  * utilisent la police mono + `tabular-nums` côté CSS ; ces helpers ne
  * produisent que la chaîne localisée.
  */

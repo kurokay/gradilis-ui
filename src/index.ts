@@ -7,7 +7,15 @@
  * `PageBreadcrumb`, `FittedDataTable`, `notify`, `openConfirm`, hooks tables,
  * `useSaveShortcut`. Subpaths : `/format`, `/canon`, `/spatial`. Règles : DESIGN.md.
  */
-export const GRADILIS_UI_VERSION = '0.4.0';
+/**
+ * ⚠️ À TENIR À JOUR avec le `package.json` — `npm version` ne touche PAS ce
+ * fichier. Elle était restée à `'0.4.0'` jusqu'à la `0.6.4`, soit deux versions
+ * de retard, sans que rien ne le signale ; un consommateur qui journalise la
+ * version pour diagnostiquer se serait fait envoyer sur la mauvaise piste.
+ * Défendu depuis par `src/version.test.ts` (y lire pourquoi ce n'est pas un
+ * `import` du `package.json` : `rootDir: "src"` casserait l'émission).
+ */
+export const GRADILIS_UI_VERSION = '0.6.4';
 
 // Thème : factory agnostique (API cible).
 export {
