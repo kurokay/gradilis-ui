@@ -129,6 +129,14 @@ et couleurs en dur ne se voyaient pas. Ils bloquaient l'adoption par la seconde.
 |---|---|---|
 | Bouton « Auto » de `FittedDataTable` | `color="gradilisGreen"` | pas de prop `color` → suit `theme.primaryColor` |
 | Libellés de `PageBreadcrumb` / bouton « Auto » | chaînes FR en dur | `GradilisLabelsProvider` (défauts FR **identiques**) |
+| Couleurs de `notify` | noms figés | `configureNotify({ colors })`, surcharge partielle |
+| Classe marqueur des `<Num>` | inexistante | `configureNum({ markerClass })`, `undefined` par défaut |
+| Actions à droite du fil d'Ariane | inexistant | prop `actions?: ReactNode` (absente = markup INCHANGÉ) |
+| `data-*` sur `FittedDataTable` | perdus | extraits sur le `<div>` racine (ancres de visite guidée) |
+
+Les quatre dernières lignes sont le **backport** des extensions de
+`gradilis_magasin`, qui était en avance sur le socle. ⚠️ Toutes sont des OPT-IN à
+défaut neutre : sans appel de configuration, le rendu est celui d'avant.
 
 ⚠️ **Les deux changements sont NON CASSANTS pour Pépinière, par construction** :
 sa primaire EST `gradilisGreen` (vérifié dans ses tokens), et sans provider les
@@ -154,22 +162,38 @@ conclu l'inverse (« les toasts perdraient leur couleur dans le magasin ») : c'
 FAUX, et l'erreur venait de n'avoir pas lu la factory. Seules les rampes de
 **MARQUE** (`gradilisGreen`, `ampOlive`…) sont non portables.
 
-### Ce qui RESTE (étapes 2 à 4) — dans cet ordre, il n'est pas négociable
+### Ce qui RESTE
 
-2. **Choisir le vocabulaire sémantique canonique.** Aujourd'hui le socle impose
-   les noms FR (`succes`/`alerte`/`erreur`), le magasin ajoute des alias anglais
-   (`success`/`warning`/`error`) sur les mêmes rampes, et utilise en plus sa
-   rampe de marque `ampBrique` pour les erreurs. Trancher = faire migrer le
-   perdant. **Décision produit, en attente de Lucas.**
-3. **Rendre injectable la couleur d'erreur de `notify`** (le magasin veut sa
-   brique de marque, pas le rouge sémantique). `notify` est un module impératif,
-   pas un composant : il lui faut un `configure*` de niveau module, pas un
-   contexte React.
-4. **Remonter les extensions du magasin**, qui est EN AVANCE sur le socle pour
-   trois briques : classe `confidential-value` de `<Num>` (mode confidentiel),
-   prop `helpTourId` de `PageBreadcrumb` (micro-tours), extraction des `data-*`
-   de `FittedDataTable` (ancres de tours). C'est un BACKPORT, pas une adoption.
-5. **Seulement là**, basculer les imports du magasin sur le socle.
+**Une seule chose : basculer les imports de `gradilis_magasin` sur le socle.**
+Tout ce dont ce basculement avait besoin côté lib est en place.
 
-⚠️ Faire 5 avant 4, c'est faire perdre au magasin son i18n, son mode confidentiel
-et ses ancres de tours — trois fonctionnalités livrées et testées.
+Prérequis mécanique : `gradilis_magasin` épingle `@gradilis/ui#v0.6.4`. Rien de
+ce qui précède ne l'atteint tant qu'un tag n'est pas posé ET la dépendance
+bumpée. ⚠️ Ne pas poser ce tag sans arbitrage : `gradilis_pepiniere_app` est en
+PAUSE de développement, et déplacer sa dépendance sous elle pendant ce temps est
+la meilleure façon de lui laisser une surprise au réveil.
+
+Ce que le magasin devra appeler à son démarrage, une fois basculé :
+
+```ts
+configureNum({ markerClass: 'confidential-value' });   // mode confidentiel
+configureNotify({ colors: { error: 'ampBrique' } });   // brique de marque
+<GradilisLabelsProvider value={{ breadcrumb: { home: t('nav.home') } }}>
+```
+…et remplacer sa prop `helpTourId` par `actions={<PageHelp tourId={…} />}`.
+
+### ⚠️ Correction d'une affirmation antérieure de ce document
+
+Une version précédente de ce §10 posait « trancher le vocabulaire sémantique
+FR/EN » comme l'étape 2 d'un ordre « non négociable ». **C'était faux, et le
+vérifier coûtait un `grep`** : les deux jeux de noms COEXISTENT sans conflit. Le
+socle injecte `succes/alerte/erreur/info` dans toute app ; le magasin ajoute des
+alias `success/warning/error` sur les MÊMES rampes ; Pépinière emploie les noms
+FR à 26 endroits. Rien ne casse, rien n'est ambigu, et trancher aujourd'hui
+n'aurait qu'un effet : forcer une migration dans un dépôt en pause.
+
+**Décision : le socle garde le FR canonique, le sujet est REPORTÉ.** C'est une
+question de propreté, pas un prérequis. Le noter ici pour que personne ne se
+croie bloqué par elle — et parce qu'un ordre annoncé « non négociable » qui ne
+l'est pas est exactement le genre d'affirmation qui coûte du temps à la
+personne suivante.

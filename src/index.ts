@@ -62,14 +62,17 @@ export {
 } from './theme.js';
 
 // Primitives vendorées du magasin (DM-7) — conventions playbook §4.
-export { Num } from './components/Num.js';
+export { Num, configureNum } from './components/Num.js';
 export { PageBreadcrumb, type Crumb } from './components/PageBreadcrumb.js';
 export { FittedDataTable } from './components/FittedDataTable.js';
 export {
   notify,
   errorMessage,
   NOTIFICATIONS_PROVIDER_PROPS,
+  configureNotify,
+  getNotifyColors,
   type NotifyOptions,
+  type NotifyColors,
 } from './lib/notify.js';
 export { openConfirm } from './lib/confirmModal.js';
 // Libellés du socle — point d'injection (dé-brandification étape 1).

@@ -44,6 +44,14 @@ import type { TableAutoFit } from '../hooks/useTableAutoFit.js';
 type FittedDataTableProps<T> = DataTableProps<T> & {
   /** Bundle renvoyé par `useTablePrefs` (option `autoFit`). */
   fit: TableAutoFit['fit'];
+  /**
+   * Attributs `data-*` — posés sur le `<div>` RACINE, pas passés à `<DataTable>`.
+   * ⚠️ Backport 2026-08-01. Sans cette extraction, un `data-*` posé sur ce
+   * composant se perd : `DataTable` ne le réémet pas sur son conteneur. Le
+   * magasin s'en sert pour ancrer ses visites guidées (`data-tour`) — une ancre
+   * silencieusement absente est un défaut invisible jusqu'à ce qu'un tour saute.
+   */
+  [key: `data-${string}`]: string | undefined;
 };
 
 function AutoButton({ active, onActivate }: { active: boolean; onActivate: () => void }) {
@@ -77,6 +85,17 @@ function AutoButton({ active, onActivate }: { active: boolean; onActivate: () =>
 export function FittedDataTable<T>(props: FittedDataTableProps<T>) {
   const { fit, totalRecords, recordsPerPage, recordsPerPageOptions, minHeight, ...rest } = props;
 
+  // Sépare les `data-*` : ils vont sur le div racine, le reste part à la table.
+  const dataAttrs: Record<string, string> = {};
+  const tableRest: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(rest)) {
+    if (k.startsWith('data-')) {
+      if (v != null) dataAttrs[k] = v as string;
+    } else {
+      tableRest[k] = v;
+    }
+  }
+
   // Fixe la hauteur seulement quand la pagination sert (sinon hauteur naturelle).
   const paginationNeeded =
     typeof totalRecords === 'number' &&
@@ -87,8 +106,8 @@ export function FittedDataTable<T>(props: FittedDataTableProps<T>) {
   // Recale `page` si la taille auto GRANDIT au point de dépasser le total de pages
   // (ex. agrandissement de fenêtre alors qu'on est en page 2+) : en mode client, un
   // slice hors borne donnerait une table vide avec curseur fantôme.
-  const page = (rest as { page?: number }).page;
-  const onPageChange = (rest as { onPageChange?: (p: number) => void }).onPageChange;
+  const page = (tableRest as { page?: number }).page;
+  const onPageChange = (tableRest as { onPageChange?: (p: number) => void }).onPageChange;
   useEffect(() => {
     if (
       !paginationNeeded ||
@@ -129,7 +148,7 @@ export function FittedDataTable<T>(props: FittedDataTableProps<T>) {
   // posées après `...rest` (height, renderPagination…) écrasent celles de l'appelant.
   const tableProps = {
     ...dataTableTextesFR,
-    ...rest,
+    ...tableRest,
     totalRecords,
     recordsPerPage,
     recordsPerPageOptions: options,
@@ -139,7 +158,7 @@ export function FittedDataTable<T>(props: FittedDataTableProps<T>) {
   } as unknown as DataTableProps<T>;
 
   return (
-    <div ref={fit.ref}>
+    <div ref={fit.ref} {...dataAttrs}>
       <DataTable<T> {...tableProps} />
     </div>
   );

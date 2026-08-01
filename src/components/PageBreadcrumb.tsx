@@ -7,6 +7,7 @@
  * (`parent.to!`) interdite par typescript-eslint strict — repli explicite '/'.
  */
 import { Breadcrumbs, Anchor, Text, Group } from '@mantine/core';
+import type { ReactNode } from 'react';
 import { useMediaQuery } from '@mantine/hooks';
 import { IconChevronLeft } from '@tabler/icons-react';
 import { Link } from 'react-router-dom';
@@ -26,7 +27,7 @@ export interface Crumb {
  * - Sur < 768px : repli tactile « ← Parent » (l'ancêtre cliquable le plus proche) au lieu
  *   de la piste complète réempilée sur plusieurs lignes.
  */
-export function PageBreadcrumb({ items }: { items: Crumb[] }) {
+export function PageBreadcrumb({ items, actions }: { items: Crumb[]; actions?: ReactNode }) {
   // ⚠️ Le segment racine et le nom du landmark sont INJECTABLES (`GradilisLabelsProvider`),
   // défauts FR identiques à l'historique. Sans ça, une app traduite affichait « Accueil »
   // sous une navigation en « Inicio » — cas réel relevé en recette côté magasin.
@@ -35,10 +36,26 @@ export function PageBreadcrumb({ items }: { items: Crumb[] }) {
   const all: Crumb[] = [home, ...items];
   const isSmall = useMediaQuery('(max-width: 768px)') ?? false;
 
+  // ⚠️ Backport 2026-08-01 — slot `actions` : un rang « fil ↔ actions », rendu
+  // UNIQUEMENT si l'appelant en fournit (sinon markup strictement INCHANGÉ, ce
+  // qui est la condition de non-régression pour Pépinière).
+  // Le socle expose un SLOT, pas la fonctionnalité : le magasin y place son
+  // bouton d'aide contextuelle `<PageHelp>`, qui dépend de son moteur de tours —
+  // lequel n'a rien à faire ici. Un socle offre l'emplacement, pas le moteur.
+  const withActions = (nav: ReactNode): ReactNode =>
+    actions ? (
+      <Group justify="space-between" align="center" wrap="nowrap" gap="xs">
+        {nav}
+        {actions}
+      </Group>
+    ) : (
+      nav
+    );
+
   if (isSmall) {
     // Ancêtre cliquable le plus proche (hors segment courant), sinon retour à l'accueil.
     const parent = [...all.slice(0, -1)].reverse().find((c) => c.to) ?? home;
-    return (
+    return withActions(
       <nav aria-label={labels.landmark}>
         <Anchor component={Link} to={parent.to ?? '/'} size="sm" mb="xs" display="inline-block">
           <Group gap={4} wrap="nowrap">
@@ -46,11 +63,11 @@ export function PageBreadcrumb({ items }: { items: Crumb[] }) {
             {parent.label}
           </Group>
         </Anchor>
-      </nav>
+      </nav>,
     );
   }
 
-  return (
+  return withActions(
     <nav aria-label={labels.landmark}>
       <Breadcrumbs mb="xs" separator={<span aria-hidden="true">/</span>}>
         {all.map((c, i) => {
@@ -65,6 +82,6 @@ export function PageBreadcrumb({ items }: { items: Crumb[] }) {
           );
         })}
       </Breadcrumbs>
-    </nav>
+    </nav>,
   );
 }

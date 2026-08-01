@@ -31,6 +31,54 @@ import {
 const ICON_SIZE = 18;
 
 /**
+ * Couleurs sémantiques des toasts.
+ *
+ * ⚠️ Les DÉFAUTS sont les noms canoniques du socle (`succes`/`alerte`/`erreur`/
+ * `info`), et ils sont portables PAR CONSTRUCTION : `createGradilisTheme`
+ * enregistre ces rampes dans le thème de TOUTE app passant par la factory. Il
+ * n'y a donc rien à configurer pour que les couleurs soient justes.
+ *
+ * ⚠️ Ce point d'injection existe pour un besoin DIFFÉRENT : une app peut vouloir
+ * sa rampe de MARQUE plutôt que la sémantique. `gradilis_magasin` colore ses
+ * erreurs en `ampBrique` (sa brique) et non en rouge générique — un choix
+ * d'identité, pas une correction. Sans cette porte, il devrait renoncer au
+ * helper et rappeler `notifications.show()` en direct, c'est-à-dire perdre
+ * l'icône et le `role` a11y que le helper existe pour garantir.
+ */
+export interface NotifyColors {
+  success: string;
+  error: string;
+  info: string;
+  warning: string;
+}
+
+const DEFAULT_COLORS: NotifyColors = {
+  success: 'succes',
+  error: 'erreur',
+  info: 'info',
+  warning: 'alerte',
+};
+
+let colors: NotifyColors = { ...DEFAULT_COLORS };
+
+/**
+ * Configure les couleurs des toasts. À appeler UNE fois au démarrage.
+ * Surcharge PARTIELLE : les clés non fournies gardent le défaut du socle.
+ *
+ * ⚠️ Réglage de MODULE et non contexte React : `notify` est une API IMPÉRATIVE,
+ * appelée depuis des gestionnaires d'évènements et des `catch`, hors de tout
+ * arbre de rendu. Un contexte y serait inatteignable.
+ */
+export function configureNotify(options: { colors?: Partial<NotifyColors> }): void {
+  colors = { ...DEFAULT_COLORS, ...options.colors };
+}
+
+/** Couleurs courantes — exposé pour les tests et le diagnostic. */
+export function getNotifyColors(): NotifyColors {
+  return { ...colors };
+}
+
+/**
  * Props du provider `<Notifications>` — partagées entre l'app (`main.tsx`) et
  * les tests pour éviter toute divergence de configuration. `aria-live="polite"`
  * par défaut ; les erreurs/warnings passent en assertif via `role="alert"` posé
@@ -63,7 +111,7 @@ const icon = (Cmp: typeof IconCheck) => createElement(Cmp, { size: ICON_SIZE });
 export const notify = {
   /** Succès (vert sémantique + IconCheck, annonce polie `role="status"`). */
   success(message: React.ReactNode, opts?: NotifyOptions): string {
-    return notifications.show({ color: 'succes', icon: icon(IconCheck), role: 'status', message, ...opts });
+    return notifications.show({ color: colors.success, icon: icon(IconCheck), role: 'status', message, ...opts });
   },
 
   /**
@@ -74,7 +122,7 @@ export const notify = {
   error(err: unknown, fallback = 'Une erreur est survenue', opts?: NotifyOptions): string {
     const message = typeof err === 'string' ? err : errorMessage(err, fallback);
     return notifications.show({
-      color: 'erreur',
+      color: colors.error,
       title: 'Erreur',
       icon: icon(IconX),
       role: 'alert',
@@ -86,12 +134,12 @@ export const notify = {
 
   /** Information neutre (ardoise + IconInfoCircle, annonce polie `role="status"`). */
   info(message: React.ReactNode, opts?: NotifyOptions): string {
-    return notifications.show({ color: 'info', icon: icon(IconInfoCircle), role: 'status', message, ...opts });
+    return notifications.show({ color: colors.info, icon: icon(IconInfoCircle), role: 'status', message, ...opts });
   },
 
   /** Avertissement (ambre + IconAlertTriangle, annonce assertive `role="alert"`). */
   warning(message: React.ReactNode, opts?: NotifyOptions): string {
-    return notifications.show({ color: 'alerte', icon: icon(IconAlertTriangle), role: 'alert', message, ...opts });
+    return notifications.show({ color: colors.warning, icon: icon(IconAlertTriangle), role: 'alert', message, ...opts });
   },
 
   /**
@@ -118,8 +166,8 @@ export const notify = {
   resolve(id: string, ok: boolean, message: React.ReactNode, opts?: NotifyOptions): void {
     notifications.update(
       ok
-        ? { id, color: 'succes', icon: icon(IconCheck), message, loading: false, autoClose: 3000, withCloseButton: true, role: 'status', ...opts }
-        : { id, color: 'erreur', icon: icon(IconX), message, loading: false, autoClose: 8000, withCloseButton: true, role: 'alert', ...opts },
+        ? { id, color: colors.success, icon: icon(IconCheck), message, loading: false, autoClose: 3000, withCloseButton: true, role: 'status', ...opts }
+        : { id, color: colors.error, icon: icon(IconX), message, loading: false, autoClose: 8000, withCloseButton: true, role: 'alert', ...opts },
     );
   },
 };
