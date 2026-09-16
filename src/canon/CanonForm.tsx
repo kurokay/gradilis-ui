@@ -1,5 +1,5 @@
 /**
- * CanonForm — formulaire de référence (§5/§9) : `@mantine/form` + `zodResolver`
+ * CanonForm — formulaire de référence (§5/§9) : `@mantine/form` + `zod4Resolver`
  * (le schéma Zod est la source de vérité de la validation), messages d'erreur
  * FR, `data-autofocus` sur le premier champ, raccourci `Ctrl+S`/`Ctrl+Entrée`
  * (`useSaveShortcut`), soumission avec `notify.success`/`notify.error`, remise
@@ -8,7 +8,7 @@
 import { Button, Group, NumberInput, Paper, Select, Stack, Text, Textarea, TextInput } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { IconDeviceFloppy, IconRotateClockwise } from '@tabler/icons-react';
-import { zodResolver } from 'mantine-form-zod-resolver';
+import { zod4Resolver } from 'mantine-form-zod-resolver';
 import { z } from 'zod';
 
 import { Num } from '../components/Num.js';
@@ -24,7 +24,7 @@ const schemaLot = z.object({
   nom: z.string().trim().min(3, 'Le nom du lot doit faire au moins 3 caractères'),
   espece: z.string().min(1, 'Choisir une espèce'),
   quantite: z
-    .number({ invalid_type_error: 'Indiquer une quantité' })
+    .number({ error: 'Indiquer une quantité' })
     .int('La quantité doit être un nombre entier')
     .positive('La quantité doit être supérieure à zéro'),
   commentaire: z.string().max(200, '200 caractères maximum'),
@@ -38,7 +38,7 @@ export function CanonForm() {
   const form = useForm<ValeursLot>({
     mode: 'uncontrolled',
     initialValues: VALEURS_INITIALES,
-    validate: zodResolver(schemaLot),
+    validate: zod4Resolver(schemaLot),
   });
 
   const soumettre = form.onSubmit(
@@ -75,7 +75,7 @@ export function CanonForm() {
     <Stack gap="sm" maw={560}>
       <PageBreadcrumb items={[{ label: 'App-canon', to: '/canon' }, { label: 'Formulaire' }]} />
       <Text c="dimmed" size="sm">
-        @mantine/form + zodResolver (erreurs FR), <Num inherit>Ctrl+S</Num> /{' '}
+        @mantine/form + zod4Resolver (erreurs FR), <Num inherit>Ctrl+S</Num> /{' '}
         <Num inherit>Ctrl+Entrée</Num> pour enregistrer, data-autofocus sur le premier champ,
         réinitialisation confirmée (openConfirm, focus sur Annuler).
       </Text>
