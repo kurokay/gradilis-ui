@@ -10,6 +10,11 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "jsx": "react-jsx",
+    // TypeScript 6.0 n'acquiert plus d'office les globales de @types/node
+    // (process, node:fs…) — src/version.test.ts et src/theme.test.ts en
+    // dépendent. Sans cette ligne : « Cannot find name 'process' » / modules
+    // node:* introuvables, même piège que côté app (docs/migrations… TS 6.0).
+    "types": ["node"],
 
     "strict": true,
     "noUnusedLocals": true,
