@@ -10,7 +10,7 @@ import { Breadcrumbs, Anchor, Text, Group } from '@mantine/core';
 import type { ReactNode } from 'react';
 import { useMediaQuery } from '@mantine/hooks';
 import { IconChevronLeft } from '@tabler/icons-react';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { useGradilisLabels } from '../lib/labels.js';
 
 export interface Crumb {

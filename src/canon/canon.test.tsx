@@ -7,7 +7,7 @@
 import { cleanup, render } from '@testing-library/react';
 import { MantineProvider, type MantineColorsTuple } from '@mantine/core';
 import { ModalsProvider } from '@mantine/modals';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter } from 'react-router';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { axe } from 'vitest-axe';
 

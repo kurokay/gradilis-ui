@@ -19,7 +19,7 @@ import {
   IconTable,
   IconZoomScan,
 } from '@tabler/icons-react';
-import { Link, Outlet, useLocation } from 'react-router-dom';
+import { Link, Outlet, useLocation } from 'react-router';
 
 const SECTIONS = [
   { path: 'tableau', label: 'Tableau métier', icone: IconTable },

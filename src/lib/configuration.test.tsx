@@ -16,7 +16,7 @@
  */
 import { afterEach, beforeAll, describe, it, expect, vi } from 'vitest';
 import { render, cleanup } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter } from 'react-router';
 import { MantineProvider } from '@mantine/core';
 import { Num, configureNum } from '../components/Num.js';
 import { PageBreadcrumb } from '../components/PageBreadcrumb.js';

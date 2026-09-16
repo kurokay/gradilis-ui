@@ -17,7 +17,7 @@
  */
 import { beforeAll, describe, it, expect, vi } from 'vitest';
 import { render } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter } from 'react-router';
 import { MantineProvider } from '@mantine/core';
 import { PageBreadcrumb } from '../components/PageBreadcrumb.js';
 import { GradilisLabelsProvider, DEFAULT_LABELS } from './labels.js';
