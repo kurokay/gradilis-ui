@@ -25,6 +25,21 @@ export const PLACEHOLDER = '—';
 
 type Nullable<T> = T | null | undefined;
 
+/**
+ * Valeur à rendre en PLACEHOLDER : `null`, `undefined`, ou tout ce qui n'est pas un nombre.
+ * ⚠️ `isNaN` COERCITIF, délibérément (et non `Number.isNaN`) : une valeur arrivée malgré le
+ * type — typiquement une chaîne d'une réponse d'API — doit rendre `—` si elle n'est pas
+ * numérique (`'abc'`), et se formater normalement si elle l'est (`'12.5'`, Decimal
+ * sérialisé), sans jamais afficher « NaN ». `Number.isNaN('abc')` vaut `false` : la chaîne
+ * partait dans `Intl` et sortait « NaN ». Source UNIQUE pour tous les formateurs numériques.
+ */
+// Prédicat de type : dans la branche `false`, `n` est un `number` (ou une chaîne numérique
+// glissée malgré le type, qu'`Intl` sait formater) — c'est ce qui laisse les formateurs
+// appeler `Intl.NumberFormat#format(n)` sans conversion.
+function estAbsent(n: Nullable<number>): n is null | undefined {
+  return n === null || n === undefined || isNaN(n as number);
+}
+
 // Instances Intl singleton module-level (création coûteuse — plan §5).
 const nombreParDecimales = new Map<number, Intl.NumberFormat>();
 const nombreLibre = new Intl.NumberFormat(LOCALE);
@@ -99,7 +114,7 @@ export function formatNumber(
   n: Nullable<number>,
   arg?: number | Intl.NumberFormatOptions,
 ): string {
-  if (n === null || n === undefined || Number.isNaN(n)) return PLACEHOLDER;
+  if (estAbsent(n)) return PLACEHOLDER;
   if (arg === undefined) return nombreLibre.format(n);
   if (typeof arg === 'number') {
     let fmt = nombreParDecimales.get(arg);
@@ -127,13 +142,13 @@ export function formatDateTime(d: Nullable<Date | string>): string {
 
 /** Montant en euros (« 1 234,56 € »). */
 export function formatEUR(n: Nullable<number>): string {
-  if (n === null || n === undefined || Number.isNaN(n)) return PLACEHOLDER;
+  if (estAbsent(n)) return PLACEHOLDER;
   return eurFmt.format(n);
 }
 
 /** Quantité entière (arrondi), séparateur de milliers FR (espace fine insécable). */
 export function formatQuantite(n: Nullable<number>): string {
-  if (n === null || n === undefined || Number.isNaN(n)) return PLACEHOLDER;
+  if (estAbsent(n)) return PLACEHOLDER;
   return quantiteFmt.format(n);
 }
 
@@ -144,7 +159,7 @@ export function formatQuantite(n: Nullable<number>): string {
  * arrondi) et de `formatNumber(n, decimales)` (décimales FIXES, imposées).
  */
 export function formatQuantiteLibre(n: Nullable<number>, maxDecimales = 3): string {
-  if (n === null || n === undefined || Number.isNaN(n)) return PLACEHOLDER;
+  if (estAbsent(n)) return PLACEHOLDER;
   // Borne ce qu'`Intl` accepte (entier 0-20) : sinon RangeError en plein rendu.
   maxDecimales = Math.min(20, Math.max(0, Math.trunc(maxDecimales) || 0));
   // Un résidu flottant négatif qui s'arrondit à zéro (0,1 + 0,2 − 0,3) ne doit pas
@@ -169,7 +184,7 @@ export function formatQuantiteLibre(n: Nullable<number>, maxDecimales = 3): stri
  * (l'arrondi *half-expand* d'`Intl` n'entre en jeu qu'à partir de 0,5).
  */
 export function formatEURArrondi(n: Nullable<number>): string {
-  if (n === null || n === undefined || Number.isNaN(n)) return PLACEHOLDER;
+  if (estAbsent(n)) return PLACEHOLDER;
   const sansMoinsZero = Math.abs(n) < 0.5 ? 0 : n;
   return eurArrondiFmt.format(sansMoinsZero);
 }
@@ -182,13 +197,13 @@ export function formatEURArrondi(n: Nullable<number>): string {
  * décimales) — un MONTANT (total, facture) reste sur `formatEUR`, au centime.
  */
 export function formatPrixUnitaire(n: Nullable<number>): string {
-  if (n === null || n === undefined || Number.isNaN(n)) return PLACEHOLDER;
+  if (estAbsent(n)) return PLACEHOLDER;
   return prixUnitaireFmt.format(n);
 }
 
 /** Pourcentage — `n` est un ratio ∈ [0,1] (0,42 → « 42 % »). */
 export function formatPourcent(n: Nullable<number>, decimales = 0): string {
-  if (n === null || n === undefined || Number.isNaN(n)) return PLACEHOLDER;
+  if (estAbsent(n)) return PLACEHOLDER;
   let fmt = pourcentParDecimales.get(decimales);
   if (!fmt) {
     fmt = new Intl.NumberFormat(LOCALE, {

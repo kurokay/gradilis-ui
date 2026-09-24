@@ -180,6 +180,28 @@ describe('formatPrixUnitaire', () => {
   });
 });
 
+describe('valeur non numérique arrivée malgré le type', () => {
+  // Une chaîne d'API glissée sous un type `number` : `—` si elle n'est pas numérique
+  // (jamais « NaN » à l'écran), formatée normalement si elle l'est (Decimal sérialisé).
+  const FORMATEURS: Array<[string, (n: number) => string]> = [
+    ['formatNumber', (n) => formatNumber(n)],
+    ['formatNumber(2)', (n) => formatNumber(n, 2)],
+    ['formatEUR', formatEUR],
+    ['formatEURArrondi', formatEURArrondi],
+    ['formatPrixUnitaire', formatPrixUnitaire],
+    ['formatQuantite', formatQuantite],
+    ['formatQuantiteLibre', (n) => formatQuantiteLibre(n)],
+    ['formatPourcent', (n) => formatPourcent(n)],
+  ];
+  it.each(FORMATEURS)('%s : chaîne non numérique → placeholder', (_nom, f) => {
+    expect(f('abc' as unknown as number)).toBe(PLACEHOLDER);
+    expect(f('12,5' as unknown as number)).toBe(PLACEHOLDER);
+  });
+  it.each(FORMATEURS)('%s : chaîne numérique → même rendu que le nombre', (_nom, f) => {
+    expect(f('12.5' as unknown as number)).toBe(f(12.5));
+  });
+});
+
 describe('dataTableTextesFR', () => {
   it('fournit les textes FR de mantine-datatable', () => {
     expect(dataTableTextesFR.noRecordsText).toBe('Aucun enregistrement');
