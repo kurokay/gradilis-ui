@@ -47,6 +47,20 @@ export interface GradilisLabels {
     tooltip: string;
     ariaLabel: string;
   };
+  /**
+   * Chrome de `<DataTable>` (mantine-datatable) rendu par `FittedDataTable` :
+   * état vide générique, texte de chargement, sélecteur de taille de page et
+   * texte de pagination. Un appelant qui pose un message MÉTIER dans
+   * `noRecordsText` (« Aucune vente enregistrée sur cette période. ») n'est pas
+   * concerné — seule la valeur GÉNÉRIQUE (`noRecordsText` par défaut) est
+   * remplacée par celle-ci.
+   */
+  dataTable: {
+    noRecordsText: string;
+    loadingText: string;
+    recordsPerPageLabel: string;
+    paginationText: (opts: { from: number; to: number; totalRecords: number }) => string;
+  };
 }
 
 /**
@@ -63,6 +77,12 @@ export const DEFAULT_LABELS: GradilisLabels = {
     label: 'Auto',
     tooltip: "Ajuster le nombre de lignes à la hauteur de l'écran",
     ariaLabel: 'Ajuster automatiquement le nombre de lignes',
+  },
+  dataTable: {
+    noRecordsText: 'Aucun enregistrement',
+    loadingText: 'Chargement…',
+    recordsPerPageLabel: 'Lignes par page',
+    paginationText: ({ from, to, totalRecords }) => `${from}–${to} sur ${totalRecords}`,
   },
 };
 
@@ -93,6 +113,7 @@ export function GradilisLabelsProvider({
     () => ({
       breadcrumb: { ...DEFAULT_LABELS.breadcrumb, ...value.breadcrumb },
       autoFit: { ...DEFAULT_LABELS.autoFit, ...value.autoFit },
+      dataTable: { ...DEFAULT_LABELS.dataTable, ...value.dataTable },
     }),
     [value],
   );

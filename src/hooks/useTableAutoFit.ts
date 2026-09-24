@@ -2,12 +2,9 @@
  * useTableAutoFit — source unique de la « taille de page » d'une DataTable, avec
  * mode auto-fit optionnel (voir {@link useAutoPageSize}).
  *
- * Vendoré de `gradilis_magasin/frontend/src/hooks/useTableAutoFit.ts` (DM-7),
- * inchangé. Utilisé par `useTablePrefs` (mode client) — le pendant serveur
- * (`useServerTable` du magasin) sera vendoré quand un écran en aura besoin
- * (Chantier C, gros volumes).
- *
- * Quand `enabled` vaut false, le hook se comporte comme un simple
+ * Utilisé par `useTablePrefs` (mode client) et par le pendant serveur d'une
+ * application consommatrice, pour ne pas dupliquer la logique auto/manuel ni la
+ * persistance. Quand `enabled` vaut false, le hook se comporte comme un simple
  * `useLocalStorage('tbl:<key>:size')` (taille manuelle uniquement).
  *
  * Trois clés localStorage distinctes :
@@ -25,6 +22,21 @@ interface UseTableAutoFitOptions {
   enabled: boolean;
   /** Taille par défaut avant tout choix/mesure. */
   defaultPageSize: number;
+  /**
+   * Signal de RE-MESURE, à bouger quand la hauteur du chrome AU-DESSUS de la table
+   * change sans que la table elle-même bouge (repli d'un encart d'aide, d'un bandeau
+   * de KPI, d'une carte de filtres).
+   *
+   * ⚠️⚠️ **Sans lui, replier ne rend RIEN** : la taille de page se déduit du `top` du
+   * tableau, mais aucun observateur ne voit ce `top` changer. La table est en hauteur
+   * FIXÉE (`fit.height`) dès que la pagination est nécessaire — donc quand le chrome
+   * au-dessus rétrécit, ni le conteneur de page ni le wrapper ne changent de hauteur,
+   * et le `ResizeObserver` reste muet. Un écran qui débordait peut masquer le défaut
+   * (la hauteur du document change, elle) : mesurer le pire écran, pas le premier.
+   * ⚠️ Si le repli est ANIMÉ, bouger la clé à la FIN de la transition — sinon la
+   * mesure lit une hauteur intermédiaire, et plus rien ne la corrige ensuite.
+   */
+  revalidateKey?: unknown;
 }
 
 export interface TableAutoFit {
@@ -38,6 +50,12 @@ export interface TableAutoFit {
   isAuto: boolean;
   /** Bundle à passer à `<FittedDataTable>`. */
   fit: {
+    /**
+     * L'auto-fit est-il activé sur cette table ? Le wrapper s'en sert pour n'émettre
+     * l'affordance « Auto » que là où elle AGIT : sans auto-fit, `resetToAuto` est un
+     * no-op et le bouton serait mort.
+     */
+    enabled: boolean;
     ref: React.RefObject<HTMLDivElement | null>;
     /** Hauteur (px) à appliquer quand la pagination est nécessaire ; 0 sinon. */
     height: number;
@@ -50,7 +68,7 @@ export interface TableAutoFit {
 
 export function useTableAutoFit(
   storageKey: string,
-  { enabled, defaultPageSize }: UseTableAutoFitOptions,
+  { enabled, defaultPageSize, revalidateKey }: UseTableAutoFitOptions,
 ): TableAutoFit {
   const [manualSize, setManualSize] = useLocalStorage<number>({
     key: `tbl:${storageKey}:size`,
@@ -77,11 +95,14 @@ export function useTableAutoFit(
 
   const isAuto = enabled && autoFlag;
 
-  // `revalidateKey: isAuto` → re-mesure à la bascule auto/manuel (le nombre de
-  // lignes change sans modifier la hauteur observée, donc aucun observer ne réagit).
+  // Re-mesure à la bascule auto/manuel (le nombre de lignes change sans modifier la
+  // hauteur observée, donc aucun observer ne réagit) ET sur le signal de l'appelant
+  // (repli d'un bloc au-dessus de la table — même angle mort, voir les options).
+  // ⚠️ Les deux sont COMBINÉS en une seule valeur : les garder séparés obligerait
+  // `useAutoPageSize` à porter deux dépendances, pour un même effet.
   const { ref, size, height, ready } = useAutoPageSize({
     enabled,
-    revalidateKey: isAuto,
+    revalidateKey: `${isAuto}|${String(revalidateKey)}`,
     rowHeightFallback: rowH,
     onRowHeight: setRowH,
   });
@@ -112,6 +133,6 @@ export function useTableAutoFit(
     setPageSize,
     resetToAuto,
     isAuto,
-    fit: { ref, height, isAuto, resetToAuto, ready },
+    fit: { enabled, ref, height, isAuto, resetToAuto, ready },
   };
 }
