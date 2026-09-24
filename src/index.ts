@@ -43,7 +43,10 @@ export {
   formatNumber,
   formatInteger,
   formatEUR,
+  formatEURArrondi,
+  formatPrixUnitaire,
   formatQuantite,
+  formatQuantiteLibre,
   formatPourcent,
   dataTableFr,
   dataTableFrPagination,
@@ -76,6 +79,11 @@ export {
 } from './components/Num.js';
 export { PageBreadcrumb, type Crumb } from './components/PageBreadcrumb.js';
 export { FittedDataTable } from './components/FittedDataTable.js';
+// Composants d'état d'écran (lot L3) — les 4 états obligatoires (DESIGN.md §5).
+export { EmptyState, type EmptyStateProps } from './components/EmptyState.js';
+export { ErrorState, type ErrorStateProps } from './components/ErrorState.js';
+export { StatusScreen, type StatusScreenProps } from './components/StatusScreen.js';
+export { PageSkeleton, type PageSkeletonProps } from './components/PageSkeleton.js';
 export {
   notify,
   errorMessage,

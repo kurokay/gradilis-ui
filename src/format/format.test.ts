@@ -5,9 +5,12 @@ import {
   dataTableTextesFR,
   formatDate,
   formatEUR,
+  formatEURArrondi,
   formatNumber,
   formatPourcent,
+  formatPrixUnitaire,
   formatQuantite,
+  formatQuantiteLibre,
   setupLocale,
 } from './index.js';
 
@@ -97,6 +100,69 @@ describe('formatPourcent', () => {
   });
   it('nullish → placeholder', () => {
     expect(formatPourcent(undefined)).toBe(PLACEHOLDER);
+  });
+});
+
+describe('formatQuantiteLibre', () => {
+  it('entier — aucun zéro forcé (compat magasin fmtQty)', () => {
+    expect(formatQuantiteLibre(70)).toBe('70');
+  });
+  it('au plus 3 décimales par défaut, avec arrondi — jamais un compte FIXE de décimales', () => {
+    expect(formatQuantiteLibre(1234.5)).toBe(`1${NNBSP}234,5`);
+    expect(formatQuantiteLibre(1234.56789)).toBe(`1${NNBSP}234,568`);
+  });
+  it('maxDecimales personnalisé', () => {
+    expect(formatQuantiteLibre(-2.5, 1)).toBe('-2,5');
+    expect(formatQuantiteLibre(1.9999, 2)).toBe('2');
+  });
+  it('zéro', () => {
+    expect(formatQuantiteLibre(0)).toBe('0');
+  });
+  it('nullish/NaN → placeholder', () => {
+    expect(formatQuantiteLibre(null)).toBe(PLACEHOLDER);
+    expect(formatQuantiteLibre(undefined)).toBe(PLACEHOLDER);
+    expect(formatQuantiteLibre(Number.NaN)).toBe(PLACEHOLDER);
+  });
+});
+
+describe('formatEURArrondi', () => {
+  it('arrondit à l’euro entier', () => {
+    expect(formatEURArrondi(1234.6)).toBe(`1${NNBSP}235${NBSP}€`);
+  });
+  it('zéro', () => {
+    expect(formatEURArrondi(0)).toBe(`0${NBSP}€`);
+  });
+  it('un négatif qui arrondit à zéro ne s’affiche jamais « -0 € »', () => {
+    expect(formatEURArrondi(-0.3)).toBe(`0${NBSP}€`);
+    expect(formatEURArrondi(-0)).toBe(`0${NBSP}€`);
+  });
+  it('le seuil est 0,5 (half-expand) — -0,5 s’éloigne bien de zéro', () => {
+    expect(formatEURArrondi(-0.5)).toBe(`-1${NBSP}€`);
+    expect(formatEURArrondi(0.5)).toBe(`1${NBSP}€`);
+  });
+  it('nullish/NaN → placeholder', () => {
+    expect(formatEURArrondi(null)).toBe(PLACEHOLDER);
+    expect(formatEURArrondi(Number.NaN)).toBe(PLACEHOLDER);
+  });
+});
+
+describe('formatPrixUnitaire', () => {
+  it('conserve jusqu’à 4 décimales quand la valeur le demande', () => {
+    expect(formatPrixUnitaire(12.3457)).toBe(`12,3457${NBSP}€`);
+  });
+  it('ne force pas au-delà de 2 décimales quand elles suffisent', () => {
+    expect(formatPrixUnitaire(12.3)).toBe(`12,30${NBSP}€`);
+  });
+  it('diffère de formatEUR sur une valeur à échelle fine', () => {
+    expect(formatPrixUnitaire(12.3457)).not.toBe(formatEUR(12.3457));
+  });
+  it('zéro et négatif', () => {
+    expect(formatPrixUnitaire(0)).toBe(`0,00${NBSP}€`);
+    expect(formatPrixUnitaire(-5.12345)).toBe(`-5,1235${NBSP}€`);
+  });
+  it('nullish/NaN → placeholder', () => {
+    expect(formatPrixUnitaire(undefined)).toBe(PLACEHOLDER);
+    expect(formatPrixUnitaire(Number.NaN)).toBe(PLACEHOLDER);
   });
 });
 

@@ -61,6 +61,21 @@ export interface GradilisLabels {
     recordsPerPageLabel: string;
     paginationText: (opts: { from: number; to: number; totalRecords: number }) => string;
   };
+  /**
+   * États d'écran génériques : `ErrorState`, `StatusScreen`, `PageSkeleton`.
+   */
+  states: {
+    /** Titre par défaut d'`ErrorState` (surchargeable par sa prop `title`). */
+    errorTitle: string;
+    /** Rappel qui précède le motif serveur — distingue « erreur » de « vide ». */
+    errorHint: string;
+    /** Bouton de relance d'`ErrorState`. */
+    retry: string;
+    /** Bouton de retour d'un écran plein-cadre (`StatusScreen`). */
+    homeAction: string;
+    /** `aria-label` du squelette de page (`PageSkeleton`). */
+    pageLoading: string;
+  };
 }
 
 /**
@@ -83,6 +98,13 @@ export const DEFAULT_LABELS: GradilisLabels = {
     loadingText: 'Chargement…',
     recordsPerPageLabel: 'Lignes par page',
     paginationText: ({ from, to, totalRecords }) => `${from}–${to} sur ${totalRecords}`,
+  },
+  states: {
+    errorTitle: 'Lecture impossible',
+    errorHint: "Ces données n'ont pas pu être lues : ce n'est pas une liste vide.",
+    retry: 'Réessayer',
+    homeAction: "Retour à l'accueil",
+    pageLoading: 'Chargement de la page',
   },
 };
 
@@ -114,6 +136,7 @@ export function GradilisLabelsProvider({
       breadcrumb: { ...DEFAULT_LABELS.breadcrumb, ...value.breadcrumb },
       autoFit: { ...DEFAULT_LABELS.autoFit, ...value.autoFit },
       dataTable: { ...DEFAULT_LABELS.dataTable, ...value.dataTable },
+      states: { ...DEFAULT_LABELS.states, ...value.states },
     }),
     [value],
   );
