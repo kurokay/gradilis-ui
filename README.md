@@ -112,8 +112,10 @@ npm run test:visual:update   # régénère les références (après avoir REGARD
 se voir ici, pas être découvert en recette dans une app consommatrice.
 
 **Comment mettre à jour les références** : `npm run test:visual` d'abord pour voir le
-diff (`playwright-report/`, non commité) ; si le changement est VOULU,
-`npm run test:visual:update` puis relire les PNG modifiés avant de committer
+diff — trois PNG par capture en écart (`*-actual.png`/`*-expected.png`/`*-diff.png`)
+sous `test-results/`, et un rapport HTML consultable sous `playwright-report/`
+(`npx playwright show-report`), aucun des deux commité ; si le changement est
+VOULU, `npm run test:visual:update` puis relire les PNG modifiés avant de committer
 `visual/__screenshots__/`.
 
 **Ce qu'ils couvrent** : les 7 sections de `src/canon/` (`CanonAppShell`,
@@ -134,10 +136,32 @@ petit banc Vite (`visual/`, jamais publié — voir `visual/README.md`).
   références PNG elles-mêmes restent dépendantes des polices disponibles sur
   la machine qui les a produites ; les régénérer sur une autre machine peut
   produire un diff de rendu de texte qui n'a rien à voir avec le socle ;
-- **le navigateur** : capturé avec Chrome système (`/usr/bin/google-chrome`),
-  jamais le Chromium téléchargé par Playwright (absent de cette machine, bac à
-  sable cassé sous ce montage) — une mise à jour de Chrome système peut à elle
-  seule invalider les références.
+- **le navigateur** : capturé avec Chrome système (`/usr/bin/google-chrome`,
+  version **153.0.8010.36** au moment des références), jamais le Chromium
+  téléchargé par Playwright (absent de cette machine, bac à sable cassé sous ce
+  montage) — une mise à jour de Chrome système peut à elle seule invalider les
+  références ;
+- **le système d'exploitation** : le suffixe `-chromium-linux` du nom des PNG
+  de référence (`playwright.config.ts` → `projects[0].name`, résolu par
+  Playwright à partir de l'OS d'exécution) rend les références **absentes**,
+  pas différentes, sur un run macOS/Windows — `test:visual` régénérerait tout
+  au lieu de comparer ;
+- **le sous-pixel exact** : le seuil `expect.toHaveScreenshot` (`maxDiffPixels:
+  24`, `threshold: 0.05` dans `playwright.config.ts`) n'est pas un confort —
+  mesuré à `0`/`0` (aucune marge) sur deux runs consécutifs identiques sur
+  cette machine, verts. La marge accordée protège une machine de CI/dev moins
+  déterministe (police de secours différente, rendu sous-pixel GPU logiciel),
+  pas un bruit constaté ici. Contrepartie éprouvée : un décalage de ~15 valeurs
+  RGB sur UNE seule nuance sémantique (`succes[9]`, la couleur de texte du
+  variant `light` en schéma clair) fait échouer Couleurs (les 4 captures, hex
+  affiché) et, dans les sections qui la consomment réellement en clair,
+  Tableau/KPI/États (badges et alertes) — mais PAS leurs pendants sombres (le
+  variant `light` y lit `succes[0]`, une autre entrée de la rampe, inchangée
+  par ce décalage) ni Formulaire/Spatial/AppShell, qui ne rendent pas cette
+  couleur. Le radius `md` (8px→24px, mutation large) fait lui échouer 24/28
+  captures. Le filet est donc sensible à un décalage de nuance RÉALISTE
+  jusqu'à cette granularité — pas seulement à un changement de teinte
+  grossier — sans jamais rougir entre deux runs identiques.
 
 ## Journal des versions
 

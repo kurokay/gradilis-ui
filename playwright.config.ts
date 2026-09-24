@@ -1,4 +1,4 @@
-import { defineConfig, devices } from '@playwright/test';
+import { defineConfig } from '@playwright/test';
 
 /**
  * Config des tests visuels du canon (`visual/canon.spec.ts`) — voir
@@ -20,7 +20,7 @@ export default defineConfig({
   fullyParallel: false,
   workers: 1,
   retries: 0,
-  reporter: [['list']],
+  reporter: [['list'], ['html', { outputFolder: './playwright-report', open: 'never' }]],
   outputDir: './test-results',
   use: {
     baseURL: `http://127.0.0.1:${PORT}`,
@@ -37,22 +37,25 @@ export default defineConfig({
   },
   expect: {
     toHaveScreenshot: {
-      // Seuil FAIBLE mais non nul : un écart de rendu de sous-pixel entre deux
-      // runs identiques (antialiasing) doit passer ; un changement sémantique
-      // de teinte (quelques badges/alertes) ne doit PAS passer. Mesuré sur deux
-      // runs consécutifs identiques avant de fixer ces valeurs (voir rapport de
-      // livraison) : bruit nul sur cette machine, donc pas de marge accordée par
-      // confort — seulement celle qui protège d'un faux rouge d'antialiasing.
+      // Seuil FAIBLE mais non nul — valeurs fixées APRÈS mesure, pas avant
+      // (voir rapport de livraison pour le détail) : `maxDiffPixels: 0,
+      // threshold: 0` sur deux runs consécutifs identiques est déjà VERT sur
+      // cette machine (bruit d'antialiasing nul, mesuré). La marge ci-dessous
+      // n'est donc PAS un confort accordé au bruit constaté ici — c'est une
+      // tolérance de sécurité pour une machine de CI/dev moins déterministe
+      // (police de secours différente, sous-pixel GPU logiciel) sans laisser
+      // passer un changement sémantique (voir la mutation ciblée du rapport).
       maxDiffPixels: 24,
       threshold: 0.05,
       animations: 'disabled',
     },
   },
   projects: [
-    {
-      name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
-    },
+    // Pas de `devices['Desktop Chrome']` : son `use` (UA, viewport 1280×720…)
+    // ÉCRASERAIT celui du bloc `use` ci-dessus (le `use` de projet prime sur le
+    // `use` racine) — constaté : la capture rendait 1280×720, pas les 1280×900
+    // déclarés. Un seul projet, la config racine suffit.
+    { name: 'chromium' },
   ],
   webServer: {
     command: `npm run visual:dev -- --port ${PORT} --strictPort`,

@@ -73,11 +73,18 @@ export function App() {
   useMarqueurPret();
 
   const Section = SECTIONS[section];
+  // La section `appshell` a besoin d'un `NavLink` ACTIF pour que la capture
+  // varie avec la marque (le lien actif porte la couleur PRIMAIRE du thème) —
+  // constaté : sans ça, les captures pépinière/factice de l'AppShell étaient
+  // OCTET POUR OCTET identiques (aucun contraste de marque testé). Les autres
+  // sections n'ont pas de router interne à ce point (`PageBreadcrumb` seul),
+  // donc l'entrée '/canon' générique leur suffit.
+  const entree = section === 'appshell' ? '/canon/tableau' : '/canon';
 
   return (
     <MantineProvider theme={THEMES[marque]} forceColorScheme={schema}>
       <ModalsProvider>
-        <MemoryRouter initialEntries={['/canon']}>
+        <MemoryRouter initialEntries={[entree]}>
           <Section />
         </MemoryRouter>
       </ModalsProvider>
