@@ -216,6 +216,16 @@ export function useAutoPageSize(opts: UseAutoPageSizeOptions = {}): UseAutoPageS
         onRowHeightRef.current?.(rowHRef.current);
       }
     }
+    // ⚠️⚠️ Mesure DIGNE DE CONFIANCE seulement (backport de l'app de référence) : au premier
+    // rendu d'une liste serveur, la taille était calculée sur des REPLIS (pied de pagination
+    // absent avant les lignes, hauteur de ligne de repli) et `per_page` suivait chaque
+    // correction — 5 → 8 → 12, donc une requête serveur par étape. On ne passe `ready`
+    // qu'une fois l'en-tête ET le pied mesurés pour de vrai (le pied n'existe qu'une fois
+    // des lignes rendues) ET une VRAIE ligne mesurée : d'ici là, `useTableAutoFit` sert
+    // l'estimation persistée (`:autosize`), faite pour ça. Une table sans pagination (aucun
+    // pied) ne devient jamais `ready` : sa taille ne sert à rien, rien n'est perdu.
+    if (!chromeRef.current || reportedRowHRef.current === null) return;
+
     // Repli borné : une valeur persistée aberrante (ex. rowh=2) ne doit pas
     // réintroduire un rowH minuscule au montage suivant.
     const rowH = Math.max(MIN_PLAUSIBLE_ROW_H, rowHRef.current || rowHeightFallback);
