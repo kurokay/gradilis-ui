@@ -49,10 +49,18 @@ introduire de styles dépendant du mode sombre.
 
 ## 5. États ingrats — les 4 sont OBLIGATOIRES sur chaque écran
 
-1. **Vide** — avec une action de sortie (bouton « Nouveau … »), jamais un blanc.
-2. **Chargement** — skeletons (`<Skeleton>`), région `role="status"` + `aria-busy`.
-3. **Erreur** — expliquée, avec relance (`Alert color="erreur"` + bouton Réessayer).
+1. **Vide** — `<EmptyState title … action={…}>`, avec une action de sortie (bouton
+   « Nouveau … »), jamais un blanc.
+2. **Chargement** — `<PageSkeleton>` pour une page (région `role="status"`), `<Skeleton>`
+   Mantine pour un bloc ; `fetching` sur les tables.
+3. **Erreur** — `<ErrorState message onRetry>` : expliquée (le rappel générique distingue
+   une erreur d'une liste vide), avec relance, annoncée (`role="alert"`). Passer
+   `announce={false}` si un `notify.error` l'annonce déjà.
 4. **Succès** — confirmation (toast `notify.success` et/ou `Alert color="succes"`).
+
+Écran d'état plein cadre (accès refusé, module désactivé, page introuvable) :
+`<StatusScreen icon title description>` (titre en h1, bouton de retour par défaut).
+Libellés de ces composants injectables : `GradilisLabelsProvider`, section `states`.
 
 Modèles rendus côte à côte : `/app/canon/etats`.
 
@@ -78,6 +86,9 @@ Modèles rendus côte à côte : `/app/canon/etats`.
 | Formulaires : `@mantine/form` + `zodResolver` (le schéma Zod = source de vérité, messages FR), `data-autofocus` sur le 1er champ, **`useSaveShortcut`** (Ctrl+S / Ctrl+Entrée) sur la saisie | Validation à la main, erreurs en anglais |
 | Appels API : instance axios `@/lib/api` de l'app, baseURL dérivée d'une **source unique** propre à l'app (magasin : `lib/basePath.ts` depuis `import.meta.env.BASE_URL` ; pépinière : `window.__GRADILIS__`, DM-5 — deux mécanismes, une seule règle) | **Toute URL `/api/...` en dur** (casse PROXY_PREFIX/code-server) |
 | Agrégats de pied de table fournis par les **données** (backend) | Recalculer des agrégats métier dans la lib de table |
+| Montants : `<Num regime="ht" \| "ttc" \| "tva">` dit le régime de tout montant affiché ; en dev, `configureNum({ guardMoneyRegime: true })` signale un montant sans régime | Laisser le lecteur deviner si un montant est HT ou TTC |
+| Textes du socle dans la langue de l'utilisateur : UN `GradilisLabelsProvider` au montage (`breadcrumb`, `autoFit`, `dataTable`, `states`) | Passer `paginationText`/`loadingText`/`recordsPerPageLabel` à `FittedDataTable` (refusés par le type) |
+| Configuration des primitives en UN appel au démarrage : `configureNum({...})`, `configureNotify({...})` — chaque appel REMPLACE toute la configuration | Plusieurs `configureNum` à différents endroits (le dernier efface les autres) |
 
 ## 8. Divergences consignées (écarts justifiés vs guidelines v2.0 / magasin)
 

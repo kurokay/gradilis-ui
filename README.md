@@ -24,8 +24,8 @@ sont dans [`DESIGN.md`](./DESIGN.md).
 
 | Import | Contenu |
 |---|---|
-| `@gradilis/ui` | thème (`createGradilisTheme`), tokens sémantiques, `notify`/`openConfirm`, primitives (`Num`, `PageBreadcrumb`, `FittedDataTable`), hooks tableaux |
-| `@gradilis/ui/format` | formatage fr-FR (€, nombres, dates), localisation datatable |
+| `@gradilis/ui` | thème (`createGradilisTheme`), tokens sémantiques, `notify`/`openConfirm`, primitives (`Num`, `PageBreadcrumb`, `FittedDataTable`), états d'écran (`EmptyState`, `ErrorState`, `StatusScreen`, `PageSkeleton`), hooks tableaux, `GradilisLabelsProvider` |
+| `@gradilis/ui/format` | formatage fr-FR (€ au centime, arrondi ou unitaire, nombres, quantités sans zéros forcés, dates), localisation datatable |
 | `@gradilis/ui/canon` | référence visuelle vivante de la charte, montée par chaque app avec **son** thème |
 | `@gradilis/ui/spatial` | châssis pan/zoom (minimap, HUD, calques) — peers optionnels, opt-in |
 
@@ -97,3 +97,16 @@ Mantine v9 (`core`, `hooks`, `charts`, `dates`, `form`, `modals`, `notifications
 
 Règles d'usage détaillées de la charte : voir [`DESIGN.md`](./DESIGN.md).
 Pratiques de développement et de test front : [`PRATIQUES-FRONT.md`](./PRATIQUES-FRONT.md).
+
+## Journal des versions
+
+- **v0.9.0** — `notify` : priorités d'affichage (erreur > avertissement > succès/info,
+  chargement au niveau erreur) et issue `'warning'` de `resolve`. `Num` : prop `regime`
+  (HT/TTC/TVA), `configureNum({ regimeLabel, guardMoneyRegime })`. `FittedDataTable` :
+  libellés via `GradilisLabelsProvider` (section `dataTable`), pas de recalage de page
+  pendant un chargement, `fit.enabled`. `useTablePrefs`/`useTableAutoFit` : `sortValues`,
+  `revalidateKey`. Nouveaux composants d'état `EmptyState`, `ErrorState`, `StatusScreen`,
+  `PageSkeleton` (section de libellés `states`). `format` : `formatQuantiteLibre`,
+  `formatEURArrondi`, `formatPrixUnitaire`. ⚠️ Peers Mantine relevés à `>=9.6.0` ;
+  ⚠️ `FittedDataTable` refuse désormais au typage `paginationText`/`loadingText`/
+  `recordsPerPageLabel` (ils étaient déjà ignorés à l'exécution depuis ce même tag).

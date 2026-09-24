@@ -105,6 +105,6 @@ export {
   type GradilisLabelsOverride,
 } from './lib/labels.js';
 export { useTablePrefs } from './hooks/useTablePrefs.js';
-export { useTableAutoFit, type TableAutoFit } from './hooks/useTableAutoFit.js';
+export { useTableAutoFit, type TableAutoFit, type RevalidateKey } from './hooks/useTableAutoFit.js';
 export { useAutoPageSize, computeAutoFit } from './hooks/useAutoPageSize.js';
 export { useSaveShortcut } from './hooks/useSaveShortcut.js';
