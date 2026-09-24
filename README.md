@@ -96,3 +96,4 @@ Mantine v9 (`core`, `hooks`, `charts`, `dates`, `form`, `modals`, `notifications
 (`engines`). Les bornes exactes font foi dans `package.json`, pas ici.
 
 Règles d'usage détaillées de la charte : voir [`DESIGN.md`](./DESIGN.md).
+Pratiques de développement et de test front : [`PRATIQUES-FRONT.md`](./PRATIQUES-FRONT.md).
