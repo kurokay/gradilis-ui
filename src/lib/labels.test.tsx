@@ -85,12 +85,45 @@ describe('injection des libellés du socle', () => {
    * Contrôle de non-vacuité des défauts : un défaut vide rendrait les deux tests
    * ci-dessus satisfaisables par accident (un `name: ''` ne matche rien d'utile)
    * et surtout produirait un landmark anonyme en production.
+   * ⚠️ `dataTable.paginationText` est une FONCTION, pas une chaîne — on vérifie
+   * son résultat plutôt que la valeur elle-même.
    */
   it('aucun libellé par défaut n’est vide', () => {
     for (const section of Object.values(DEFAULT_LABELS)) {
       for (const [cle, valeur] of Object.entries(section)) {
+        if (typeof valeur === 'function') continue;
         expect(valeur, `libellé par défaut vide : ${cle}`).toMatch(/\S/);
       }
     }
+    expect(DEFAULT_LABELS.dataTable.paginationText({ from: 1, to: 10, totalRecords: 30 })).toMatch(
+      /\S/,
+    );
+  });
+
+  /**
+   * Défauts `dataTable` = les constantes FR historiques du chrome mantine-datatable,
+   * à l'identique (condition de non-régression pour le seul consommateur actuel).
+   */
+  it('défauts dataTable : chaînes FR historiques, octet pour octet', () => {
+    expect(DEFAULT_LABELS.dataTable.noRecordsText).toBe('Aucun enregistrement');
+    expect(DEFAULT_LABELS.dataTable.loadingText).toBe('Chargement…');
+    expect(DEFAULT_LABELS.dataTable.recordsPerPageLabel).toBe('Lignes par page');
+    expect(DEFAULT_LABELS.dataTable.paginationText({ from: 1, to: 10, totalRecords: 30 })).toBe(
+      '1–10 sur 30',
+    );
+  });
+
+  /**
+   * Surcharge partielle de `dataTable` seul : `breadcrumb`/`autoFit` gardent leurs
+   * défauts (même piège de fusion que le test principal, sur la 3ᵉ section).
+   */
+  it('surcharge PARTIELLE de dataTable : les autres sections restent au défaut', () => {
+    const { getByRole } = monter(
+      <GradilisLabelsProvider value={{ dataTable: { noRecordsText: 'Rien à afficher' } }}>
+        {FIL}
+      </GradilisLabelsProvider>,
+    );
+    const nav = getByRole('navigation', { name: DEFAULT_LABELS.breadcrumb.landmark });
+    expect(nav.textContent).toContain(DEFAULT_LABELS.breadcrumb.home);
   });
 });

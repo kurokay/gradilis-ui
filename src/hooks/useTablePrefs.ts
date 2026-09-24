@@ -1,9 +1,6 @@
 /**
- * useTablePrefs — préférences partagées des DataTable en mode CLIENT
- * (convention playbook §4 : mode client par défaut ; le mode serveur —
- * `useServerTable` du magasin — sera vendoré au premier besoin, Chantier C).
- *
- * Vendoré de `gradilis_magasin/frontend/src/hooks/useTablePrefs.ts` (DM-7), inchangé.
+ * useTablePrefs — préférences partagées des DataTable en mode CLIENT (le mode
+ * serveur, pour les gros volumes, vit côté application consommatrice).
  *
  * Fournit la pagination (page + taille de page persistée en localStorage) et
  * le tri client générique pour les `<DataTable>` métier.
@@ -16,7 +13,7 @@ import { useState, useCallback } from 'react';
 import type { DataTableSortStatus } from 'mantine-datatable';
 import { useTableAutoFit, type TableAutoFit } from './useTableAutoFit.js';
 
-interface UseTablePrefsOptions {
+interface UseTablePrefsOptions<T> {
   /** Taille de page par défaut (avant lecture du localStorage). */
   defaultPageSize?: number;
   /**
@@ -24,6 +21,35 @@ interface UseTablePrefsOptions {
    * en bas du viewport. `fit` (à passer à `<FittedDataTable>`) est alors renseigné.
    */
   autoFit?: boolean;
+  /**
+   * Signal de re-mesure de l'auto-fit — à bouger quand un bloc AU-DESSUS de la table
+   * se replie/déplie. Voir `useTableAutoFit` : sans lui, le repli ne libère que du blanc.
+   */
+  revalidateKey?: unknown;
+  /**
+   * Clés de tri **DÉRIVÉES** — `{ <accessor> : (ligne) => valeur comparable }`.
+   *
+   * ⚠️⚠️ **Elle existe parce qu'une colonne peut n'avoir AUCUN chemin triable sur la
+   * ligne**, et que le défaut correspondant est SILENCIEUX : `getByAccessor` rend alors
+   * l'objet lui-même, `compareValues` retombe sur `String(a).localeCompare(String(b))`,
+   * soit `"[object Object]"` de part et d'autre — toutes les lignes égales, tri stable,
+   * ordre INCHANGÉ. La colonne porte une flèche, se clique, et ne trie rien. Un tri qui
+   * ne trie pas et ne le dit pas est pire qu'une colonne non triable.
+   *
+   * ⚠️ **Le sens de lecture est celui de `sortRecords`** : la clé cherchée est
+   * `sortStatus.sortKey ?? columnAccessor`, donc un `sortKey` posé sur la colonne
+   * fonctionne aussi. Absente de la table → `getByAccessor` comme avant, à l'identique :
+   * l'option est strictement ADDITIVE.
+   *
+   * ⚠️⚠️ **Passer une CONSTANTE DE MODULE, jamais un objet littéral construit au rendu** :
+   * la table entre dans les dépendances de `sortRecords`, donc un littéral en changerait
+   * l'identité à chaque rendu — inoffensif si l'appel est direct, destructeur pour
+   * tout écran qui mettrait `sortRecords` dans un `useMemo`/`useEffect`.
+   *
+   * ⚠️ Une valeur `null`/`undefined`/`''` rendue par le getter suit la règle commune :
+   * **en fin de liste, dans les DEUX sens**.
+   */
+  sortValues?: Record<string, (row: T) => unknown>;
 }
 
 interface UseTablePrefsResult<T> {
@@ -86,29 +112,36 @@ function compareValues(a: unknown, b: unknown): number {
 
 export function useTablePrefs<T = Record<string, unknown>>(
   storageKey: string,
-  opts?: UseTablePrefsOptions,
+  opts?: UseTablePrefsOptions<T>,
 ): UseTablePrefsResult<T> {
   const [page, setPage] = useState(1);
   const { pageSize, setPageSize, fit } = useTableAutoFit(storageKey, {
     enabled: opts?.autoFit ?? false,
     defaultPageSize: opts?.defaultPageSize ?? 20,
+    revalidateKey: opts?.revalidateKey,
   });
   const [sortStatus, setSortStatus] = useState<DataTableSortStatus<T>>({
     columnAccessor: '',
     direction: 'asc',
   });
 
+  const sortValues = opts?.sortValues;
+
   const sortRecords = useCallback(
     (rows: T[]): T[] => {
       const accessor = (sortStatus.sortKey ?? sortStatus.columnAccessor) as string;
       if (!accessor) return rows;
       const dir = sortStatus.direction === 'desc' ? -1 : 1;
+      // Clé DÉRIVÉE si l'écran en a déclaré une pour cet accessor, sinon lecture par
+      // chemin — le comportement historique, inchangé (cf. `sortValues` ci-dessus).
+      const lire = sortValues?.[accessor];
+      const valeur = lire ?? ((row: T) => getByAccessor(row, accessor));
       // Tri stable : index secondaire pour préserver l'ordre des égalités.
       return rows
         .map((row, index) => ({ row, index }))
         .sort((x, y) => {
-          const va = getByAccessor(x.row, accessor);
-          const vb = getByAccessor(y.row, accessor);
+          const va = valeur(x.row);
+          const vb = valeur(y.row);
           const aNil = isNil(va);
           const bNil = isNil(vb);
           // null/undefined/'' toujours en dernier, quelle que soit la direction.
@@ -122,7 +155,7 @@ export function useTablePrefs<T = Record<string, unknown>>(
         })
         .map((entry) => entry.row);
     },
-    [sortStatus],
+    [sortStatus, sortValues],
   );
 
   return { page, setPage, pageSize, setPageSize, sortStatus, setSortStatus, sortRecords, fit };
