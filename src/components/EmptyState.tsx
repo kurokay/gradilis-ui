@@ -2,19 +2,21 @@
  * EmptyState — bloc générique pour un écran/section rendu à vide : icône,
  * titre, description optionnelle, action optionnelle, centrés verticalement.
  *
- * Repris de l'app de référence (backport).
- * Volontairement construit sur les primitives Mantine (`Stack`/`ThemeIcon`/`Text`)
- * plutôt que sur un composant `EmptyState` propre à `@mantine/core` : le peer
- * range du socle couvre `>=9.5.0`, et rien ne garantit qu'un tel composant
- * existe déjà à ce plancher — pour ne pas lier le socle à une mineure Mantine
- * récente, on reste sur les primitives déjà utilisées ailleurs dans le socle.
+ * Repris de l'app de référence (backport), dans sa version Mantine 9.6 : construit
+ * sur le composant `EmptyState` de `@mantine/core` (taille `md`, variante `light`) —
+ * médaillon de 96 px, icône portée à 48 px par la feuille de Mantine (`> svg { 1em }`,
+ * quelle que soit la `size` passée à l'icône), titre 600 à la taille `lg`.
+ * ⚠️ Jusqu'à v0.9.0, le socle évitait ce composant parce que ses peers admettaient
+ * Mantine 9.5, où il n'est pas garanti ; les peers exigent `>=9.6.0` depuis v0.9.0,
+ * la raison est tombée — et la version « primitives » (médaillon 48 px, titre 500/md)
+ * divergeait visiblement de l'app de référence.
  *
  * Ni `Paper` ni bordure : l'appelant choisit son propre conteneur (une carte,
  * une cellule de grille, une section pleine largeur…) — imposer un cadre ici
  * doublerait celui d'un appelant qui en a déjà un.
  *
- * `title` n'est jamais rendu comme titre sémantique (`h*`) : par défaut un
- * `<Text>`, pour ne pas déplacer la hiérarchie de titres de la page appelante.
+ * `title` n'est jamais rendu comme titre sémantique (`h*`) : Mantine le rend en
+ * `div` (pas de prop `order`), pour ne pas déplacer la hiérarchie de titres de la page appelante.
  *
  * @example
  * <EmptyState
@@ -24,7 +26,7 @@
  *   action={<Button leftSection={<IconPlus size={16} />}>Nouvelle facture</Button>}
  * />
  */
-import { Stack, Text, ThemeIcon } from '@mantine/core';
+import { EmptyState as MantineEmptyState } from '@mantine/core';
 import type { ReactNode } from 'react';
 
 export interface EmptyStateProps {
@@ -42,21 +44,10 @@ export interface EmptyStateProps {
 
 export function EmptyState({ icon, title, description, action, color = 'gray' }: EmptyStateProps) {
   return (
-    <Stack align="center" gap="xs" py="xl">
-      {icon && (
-        <ThemeIcon variant="light" color={color} size={48} radius="xl">
-          {icon}
-        </ThemeIcon>
-      )}
-      <Text fw={500} ta="center">
-        {title}
-      </Text>
-      {description && (
-        <Text size="sm" c="dimmed" ta="center">
-          {description}
-        </Text>
-      )}
-      {action}
-    </Stack>
+    // ⚠️ Pas de prop `order` : Mantine rend alors le titre en `div`, jamais en `h*` —
+    // un état vide ne doit pas déplacer la hiérarchie de titres de la page appelante.
+    <MantineEmptyState icon={icon} title={title} description={description} variant="light" color={color} py="xl">
+      {action && <MantineEmptyState.Actions>{action}</MantineEmptyState.Actions>}
+    </MantineEmptyState>
   );
 }
