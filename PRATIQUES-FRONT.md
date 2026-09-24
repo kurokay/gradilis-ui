@@ -18,6 +18,9 @@ pas ici : elles vivent dans la documentation interne de l'écosystème.
 - **Les `peerDependencies` fixent les majeures de l'app** (Node, Mantine, `react-router`,
   zod). Après un bump du tag, lire `npm ls --all` : un `npm install` qui réussit ne prouve pas
   que l'arbre est cohérent, et une borne de peer trop étroite fige Mantine sans rien dire.
+- **Côté socle** : borner chaque peer à la MAJEURE (`>=x.y.0 <X+1`), jamais `~x.y.0` — un peer
+  étroit fige la version installée dans l'app même si sa propre plage est plus large, et chaque
+  correctif de la lib devient alors un tag du socle.
 - Vérifier `node -v` **avant** tout `npm install` : un npm plus ancien que celui du lockfile peut
   le réécrire (perte de champs, dépendances natives mal résolues).
 - Importer le routeur depuis **`react-router`**, jamais `react-router-dom`.
