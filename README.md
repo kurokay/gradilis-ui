@@ -146,21 +146,25 @@ petit banc Vite (`visual/`, jamais publié — voir `visual/README.md`).
   Playwright à partir de l'OS d'exécution) rend les références **absentes**,
   pas différentes, sur un run macOS/Windows — `test:visual` régénérerait tout
   au lieu de comparer ;
-- **le sous-pixel exact** : le seuil `expect.toHaveScreenshot` (`maxDiffPixels:
-  24`, `threshold: 0.05` dans `playwright.config.ts`) n'est pas un confort —
-  mesuré à `0`/`0` (aucune marge) sur deux runs consécutifs identiques sur
-  cette machine, verts. La marge accordée protège une machine de CI/dev moins
-  déterministe (police de secours différente, rendu sous-pixel GPU logiciel),
-  pas un bruit constaté ici. Contrepartie éprouvée : un décalage de ~15 valeurs
-  RGB sur UNE seule nuance sémantique (`succes[9]`, la couleur de texte du
-  variant `light` en schéma clair) fait échouer Couleurs (les 4 captures, hex
-  affiché) et, dans les sections qui la consomment réellement en clair,
-  Tableau/KPI/États (badges et alertes) — mais PAS leurs pendants sombres (le
-  variant `light` y lit `succes[0]`, une autre entrée de la rampe, inchangée
-  par ce décalage) ni Formulaire/Spatial/AppShell, qui ne rendent pas cette
-  couleur. Le radius `md` (8px→24px, mutation large) fait lui échouer 24/28
-  captures. Le filet est donc sensible à un décalage de nuance RÉALISTE
-  jusqu'à cette granularité — pas seulement à un changement de teinte
+- **le sous-pixel exact** : `expect.toHaveScreenshot` (`playwright.config.ts`)
+  sépare deux tolérances qui gardent des rôles distincts (détail dans le
+  commentaire du fichier) — `threshold` (delta de teinte pixel-à-pixel)
+  absorbe un décalage de NUANCE étalé sur beaucoup de pixels, `maxDiffPixels`
+  absorbe l'antialiasing localisé d'un bord. `threshold: 0` (aucune marge de
+  teinte), `maxDiffPixels: 24` conservé : deux runs consécutifs identiques
+  restent VERTS sur cette machine (bruit de teinte nul, mesuré) — la marge de
+  `threshold: 0.01` retenue protège donc une machine moins déterministe, pas
+  un bruit constaté ici. Contrepartie éprouvée : un décalage de ~15 valeurs
+  RGB sur UNE seule nuance sémantique (`succes[9]`, lue par le variant
+  `light` — texte en schéma clair, FOND assombri en schéma sombre,
+  `get-css-color-variables.mjs`) fait échouer Couleurs (les 4 captures, hex
+  affiché) ET Tableau/KPI/États dans les DEUX schémas (badges et alertes) —
+  le premier essai à `threshold: 0.05` avait manqué les pendants sombres
+  (delta trop petit pour ce seuil trop lâche), ce qui a fait baisser
+  `threshold` à `0.01`. Formulaire/Spatial/AppShell restent verts (ne rendent
+  pas cette couleur). Le radius `md` (8px→24px, mutation large) fait lui
+  échouer 24/28 captures. Le filet est donc sensible à un décalage de nuance
+  RÉALISTE sur les DEUX schémas — pas seulement à un changement de teinte
   grossier — sans jamais rougir entre deux runs identiques.
 
 ## Journal des versions

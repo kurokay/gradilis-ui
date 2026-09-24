@@ -37,16 +37,24 @@ export default defineConfig({
   },
   expect: {
     toHaveScreenshot: {
-      // Seuil FAIBLE mais non nul — valeurs fixées APRÈS mesure, pas avant
-      // (voir rapport de livraison pour le détail) : `maxDiffPixels: 0,
-      // threshold: 0` sur deux runs consécutifs identiques est déjà VERT sur
-      // cette machine (bruit d'antialiasing nul, mesuré). La marge ci-dessous
-      // n'est donc PAS un confort accordé au bruit constaté ici — c'est une
-      // tolérance de sécurité pour une machine de CI/dev moins déterministe
-      // (police de secours différente, sous-pixel GPU logiciel) sans laisser
-      // passer un changement sémantique (voir la mutation ciblée du rapport).
+      // Les deux réglages gardent des rôles DISTINCTS, pas une seule marge :
+      //   - `threshold` (delta de couleur pixel-à-pixel, formule YIQ de
+      //     pixelmatch) absorbe un décalage de TEINTE étalé sur beaucoup de
+      //     pixels — exactement la forme d'une régression de nuance sémantique.
+      //     Trop haut, il la masque : mesuré à `threshold: 0` (aucune marge),
+      //     `maxDiffPixels: 24` conservé, deux runs consécutifs identiques
+      //     restent VERTS sur cette machine (bruit de teinte nul) — ce n'est
+      //     donc pas un confort accordé à du bruit constaté. Fixé à `0.01`
+      //     (pas `0.05`, essayé puis rejeté : masquait un décalage de ~8
+      //     valeurs RGB sur un FOND de badge en schéma sombre — voir la
+      //     contre-épreuve `succes[9]` du rapport de livraison, qui échoue
+      //     bien aux DEUX schémas à `0.01`, clair ET sombre, le `light`
+      //     variant lisant `succes[9]` des deux côtés : texte en clair,
+      //     fond assombri en sombre — `get-css-color-variables.mjs`).
+      //   - `maxDiffPixels` absorbe un ÉCART LOCALISÉ sur peu de pixels —
+      //     l'antialiasing d'un bord, pas une régression de fond.
       maxDiffPixels: 24,
-      threshold: 0.05,
+      threshold: 0.01,
       animations: 'disabled',
     },
   },
