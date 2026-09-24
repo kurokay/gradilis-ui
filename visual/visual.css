@@ -1,0 +1,17 @@
+/**
+ * Rendu déterministe du banc : Playwright coupe déjà les animations CSS/Web
+ * Animations respectant `prefers-reduced-motion` (`reducedMotion: 'reduce'`
+ * dans `playwright.config.ts`, et `respectReducedMotion: true` au thème —
+ * `src/theme.ts` — en tient compte). Cette feuille couvre ce qui NE regarde
+ * pas cette préférence : le curseur clignotant d'un champ texte (jamais
+ * focalisé dans ce banc, gardé par prudence) et une marge de sécurité globale
+ * sur toute transition/animation résiduelle d'un composant tiers.
+ */
+*,
+*::before,
+*::after {
+  animation-duration: 0.001ms !important;
+  animation-delay: 0ms !important;
+  transition-duration: 0.001ms !important;
+  caret-color: transparent !important;
+}

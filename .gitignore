@@ -2,3 +2,8 @@ node_modules/
 dist/
 *.log
 .DS_Store
+
+# Tests visuels (visual/canon.spec.ts) — références PNG dans
+# visual/__screenshots__/ COMMITÉES ; ces sorties de run ne le sont pas.
+test-results/
+playwright-report/
