@@ -35,9 +35,16 @@ Dans le `package.json` d'une app :
 
 ```jsonc
 "dependencies": {
-  "@gradilis/ui": "git+https://github.com/kurokay/gradilis-ui.git#v0.4.0"
+  "@gradilis/ui": "github:kurokay/gradilis-ui#v0.8.0"
 }
 ```
+
+(La forme longue `git+https://github.com/kurokay/gradilis-ui.git#vX.Y.Z` est équivalente.)
+
+⚠️ **Les `peerDependencies` fixent les majeures de l'app consommatrice** (Node 24,
+Mantine ≥ 9.5, `react-router` ≥ 7 si `spatial`, zod 3.25 ou 4). Monter le tag peut donc
+exiger des montées dans l'app : lire `npm ls --all` après l'installation, un `npm install`
+qui réussit ne suffit pas à le prouver.
 
 `npm install` clone le repo au tag, puis le script `prepare` compile `dist/` automatiquement
 (rien de compilé n'est commité). Chaque app **épingle** sa version — aucune app n'est
@@ -85,6 +92,7 @@ restent dans l'app.
 Mantine v9 (`core`, `hooks`, `charts`, `dates`, `form`, `modals`, `notifications`),
 `@tabler/icons-react`, `dayjs`, `mantine-datatable`, `mantine-form-zod-resolver`, `react`,
 `react-dom`, `zod`. Optionnelles (subpath `spatial`) : `react-zoom-pan-pinch`,
-`react-router-dom`.
+`react-router` (v7+ — **plus** `react-router-dom`, depuis v0.7.0). Runtime : Node 24
+(`engines`). Les bornes exactes font foi dans `package.json`, pas ici.
 
 Règles d'usage détaillées de la charte : voir [`DESIGN.md`](./DESIGN.md).

@@ -76,12 +76,12 @@ Modèles rendus côte à côte : `/app/canon/etats`.
 | Fil d'Ariane via **`<PageBreadcrumb items={…} />`** (« Accueil » auto, `aria-current`, repli mobile) | Re-hardcoder `<Breadcrumbs>` Mantine |
 | Tables : `mantine-datatable` via **`<FittedDataTable fit={fit} …>`** + **`useTablePrefs(key, { autoFit: true })`** (client par défaut) ; textes FR spreadés d'office | `<table>` maison, DataTable sans localisation FR, pagination re-implémentée |
 | Formulaires : `@mantine/form` + `zodResolver` (le schéma Zod = source de vérité, messages FR), `data-autofocus` sur le 1er champ, **`useSaveShortcut`** (Ctrl+S / Ctrl+Entrée) sur la saisie | Validation à la main, erreurs en anglais |
-| Appels API : instance axios `@/lib/api` (baseURL dérivée de `window.__GRADILIS__`, DM-5) | **Toute URL `/api/...` en dur** (casse PROXY_PREFIX/code-server) |
+| Appels API : instance axios `@/lib/api` de l'app, baseURL dérivée d'une **source unique** propre à l'app (magasin : `lib/basePath.ts` depuis `import.meta.env.BASE_URL` ; pépinière : `window.__GRADILIS__`, DM-5 — deux mécanismes, une seule règle) | **Toute URL `/api/...` en dur** (casse PROXY_PREFIX/code-server) |
 | Agrégats de pied de table fournis par les **données** (backend) | Recalculer des agrégats métier dans la lib de table |
 
 ## 8. Divergences consignées (écarts justifiés vs guidelines v2.0 / magasin)
 
-1. **DM-1 — Stack tables = `mantine-datatable` 9.3.x (lockstep Mantine 9), PAS
+1. **DM-1 — Stack tables = `mantine-datatable` (lockstep Mantine 9 ; 9.4.x depuis v0.5.0), PAS
    `mantine-react-table`.** Les mentions MRT des guidelines v2.0 (§5 « MRT_Localization_FR »,
    §8 « tableaux → mantine-react-table », §3.7 « Mantine et MRT ») sont **périmées** :
    MRT v2 est bloqué en beta depuis février 2025 et incompatible au-delà de Mantine 7,
@@ -95,9 +95,9 @@ Modèles rendus côte à côte : `/app/canon/etats`.
    (4,5:1). La rampe est héritée du socle magasin, qui avait déjà opéré cet
    assombrissement ; le reste de la rampe est inchangé. (Les 3 autres ancres
    sémantiques §3.2 coïncident.)
-3. **DM-7 — socle vendoré de `gradilis_magasin`** (thème, primitives, hooks) plutôt
-   que package publié : dette « re-synchroniser si publication ultérieure de
-   `@gradilis/ui` magasin » (détail : README du package, M.5). Deux adaptations de
+3. **DM-7 — ~~socle vendoré de `gradilis_magasin`~~ : CADUC.** Le socle est ce repo,
+   consommé en git-dep + tag par magasin ET pépinière ; le vendoring est abandonné
+   (README § « Écosystème »). Ce qui reste vrai de DM-7 : deux adaptations de
    code au passage du lint plus strict de Pépinière (typescript-eslint strict +
    react-hooks v7) : pattern « latest ref » de `useAutoPageSize` déplacé dans un
    layout effect, et règle `react-hooks/refs` coupée pour le seul
@@ -167,9 +167,7 @@ FAUX, et l'erreur venait de n'avoir pas lu la factory. Seules les rampes de
 **Une seule chose : basculer les imports de `gradilis_magasin` sur le socle.**
 Tout ce dont ce basculement avait besoin côté lib est en place.
 
-Prérequis mécanique : `gradilis_magasin` épingle `@gradilis/ui#v0.6.4`. Rien de
-ce qui précède ne l'atteint tant qu'un tag n'est pas posé ET la dépendance
-bumpée. ⚠️ Ne pas poser ce tag sans arbitrage : `gradilis_pepiniere_app` est en
+⚠️ Ne pas poser un tag qui déplace les peers sans arbitrage : `gradilis_pepiniere_app` est en
 PAUSE de développement, et déplacer sa dépendance sous elle pendant ce temps est
 la meilleure façon de lui laisser une surprise au réveil.
 
