@@ -17,6 +17,8 @@
  *   `role="alert"` (assertif) sur erreur/warning.
  * - Absorber `errorMessage()` (extraction du message d'erreur API).
  * - Factoriser le pattern « chargement → succès/erreur » (`loading`/`resolve`).
+ * - Prioriser erreurs/avertissements au-delà de la limite de toasts (backport
+ *   depuis l'app de référence, avec l'issue `'warning'` de `resolve`).
  */
 import { createElement } from 'react';
 import { notifications } from '@mantine/notifications';
@@ -108,16 +110,41 @@ export function errorMessage(e: unknown, fallback = 'Une erreur est survenue'): 
 
 const icon = (Cmp: typeof IconCheck) => createElement(Cmp, { size: ICON_SIZE });
 
+/**
+ * Priorités d'affichage (`priority` de `NotificationData`, Mantine ≥ 9.6 ;
+ * ignoré sans erreur en 9.5). Au-delà de la limite de toasts simultanés,
+ * Mantine affiche les priorités les plus hautes en premier — une erreur ne doit
+ * jamais être éclipsée par une rafale de succès. Un appelant qui passe SA propre
+ * `priority` dans `opts` prime toujours (`...opts` en dernier).
+ *
+ * `PRIORITY_DEFAULT` vaut 0, la valeur que Mantine suppose en son absence :
+ * succès et info ne changent donc pas de rang.
+ *
+ * ⚠️ `PRIORITY_LOADING === PRIORITY_ERROR` : la plus haute, à ÉGALITÉ avec les
+ * erreurs, jamais au-dessus (un chargement ne doit pas repousser une vraie
+ * erreur hors de la limite). À égalité, Mantine garde l'ordre d'INSERTION : le
+ * toast de chargement, posé en premier, reste affiché devant les erreurs
+ * survenues PENDANT l'opération — au lieu d'être relégué en file d'attente
+ * alors qu'il n'a ni auto-close ni bouton fermer (l'opération semblerait ne
+ * jamais avoir démarré). `resolve()` ramène ensuite la priorité à celle de
+ * l'ISSUE réelle.
+ */
+const PRIORITY_ERROR = 2;
+const PRIORITY_LOADING = PRIORITY_ERROR;
+const PRIORITY_WARNING = 1;
+const PRIORITY_DEFAULT = 0;
+
 export const notify = {
   /** Succès (vert sémantique + IconCheck, annonce polie `role="status"`). */
   success(message: React.ReactNode, opts?: NotifyOptions): string {
-    return notifications.show({ color: colors.success, icon: icon(IconCheck), role: 'status', message, ...opts });
+    return notifications.show({ color: colors.success, icon: icon(IconCheck), role: 'status', priority: PRIORITY_DEFAULT, message, ...opts });
   },
 
   /**
    * Erreur (terracotta + IconX + annonce assertive `role="alert"`, autoClose allongé).
    * `err` peut être une chaîne (message direct) ou une erreur API (extraite via
-   * `errorMessage(err, fallback)`). Titre « Erreur » par défaut.
+   * `errorMessage(err, fallback)`). Titre « Erreur » par défaut. Priorité la
+   * plus haute : passe devant succès/info quand la limite de toasts est atteinte.
    */
   error(err: unknown, fallback = 'Une erreur est survenue', opts?: NotifyOptions): string {
     const message = typeof err === 'string' ? err : errorMessage(err, fallback);
@@ -127,6 +154,7 @@ export const notify = {
       icon: icon(IconX),
       role: 'alert',
       autoClose: 8000,
+      priority: PRIORITY_ERROR,
       message,
       ...opts,
     });
@@ -134,12 +162,12 @@ export const notify = {
 
   /** Information neutre (ardoise + IconInfoCircle, annonce polie `role="status"`). */
   info(message: React.ReactNode, opts?: NotifyOptions): string {
-    return notifications.show({ color: colors.info, icon: icon(IconInfoCircle), role: 'status', message, ...opts });
+    return notifications.show({ color: colors.info, icon: icon(IconInfoCircle), role: 'status', priority: PRIORITY_DEFAULT, message, ...opts });
   },
 
   /** Avertissement (ambre + IconAlertTriangle, annonce assertive `role="alert"`). */
   warning(message: React.ReactNode, opts?: NotifyOptions): string {
-    return notifications.show({ color: colors.warning, icon: icon(IconAlertTriangle), role: 'alert', message, ...opts });
+    return notifications.show({ color: colors.warning, icon: icon(IconAlertTriangle), role: 'alert', priority: PRIORITY_WARNING, message, ...opts });
   },
 
   /**
@@ -154,21 +182,32 @@ export const notify = {
       message,
       autoClose: false,
       withCloseButton: false,
+      // Seul toast PERSISTANT : priorité au niveau ERREUR (cf. `PRIORITY_LOADING`).
+      priority: PRIORITY_LOADING,
       ...opts,
     });
     return id;
   },
 
   /**
-   * Résout un toast `loading` en succès ou erreur (met à jour le même `id`).
+   * Résout un toast `loading` en succès (`true`), erreur (`false`) ou
+   * avertissement (`'warning'`), en mettant à jour le même `id`.
    * Erreur → `role="alert"` + autoClose allongé, comme `notify.error`.
+   *
+   * ⚠️ Le 3ᵉ état `'warning'` n'est PAS cosmétique : une opération en LOT peut
+   * réussir partiellement (« 4 envoyés, 2 en échec »), ce qu'un booléen ne sait
+   * pas dire. Sans lui, l'appelant retomberait sur `notifications.update()` en
+   * direct et perdrait l'icône et le `role` a11y — `icon()` étant privé, seul le
+   * helper sait les poser. Toute nouvelle issue se règle ICI.
    */
-  resolve(id: string, ok: boolean, message: React.ReactNode, opts?: NotifyOptions): void {
-    notifications.update(
-      ok
-        ? { id, color: colors.success, icon: icon(IconCheck), message, loading: false, autoClose: 3000, withCloseButton: true, role: 'status', ...opts }
-        : { id, color: colors.error, icon: icon(IconX), message, loading: false, autoClose: 8000, withCloseButton: true, role: 'alert', ...opts },
-    );
+  resolve(id: string, outcome: boolean | 'warning', message: React.ReactNode, opts?: NotifyOptions): void {
+    const base =
+      outcome === 'warning'
+        ? { color: colors.warning, icon: icon(IconAlertTriangle), autoClose: 5000, role: 'alert' as const, priority: PRIORITY_WARNING }
+        : outcome
+          ? { color: colors.success, icon: icon(IconCheck), autoClose: 3000, role: 'status' as const, priority: PRIORITY_DEFAULT }
+          : { color: colors.error, icon: icon(IconX), autoClose: 8000, role: 'alert' as const, priority: PRIORITY_ERROR };
+    notifications.update({ id, message, loading: false, withCloseButton: true, ...base, ...opts });
   },
 };
 
