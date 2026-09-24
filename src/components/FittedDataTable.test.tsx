@@ -217,11 +217,22 @@ describe('FittedDataTable — recalage de `page` hors bornes', () => {
     expect(onPageChange).not.toHaveBeenCalled();
   });
 
-  it('ne recale pas tant que le total est inconnu (0 pendant un chargement)', () => {
-    // Page restaurée depuis l'URL : les données ne sont pas encore arrivées.
+  it('recale en page 1 sur un résultat VIDE hors chargement (filtre sans résultat)', () => {
+    // Hors `fetching`, un total de 0 est une réponse : la page 3 d'une liste vide n'a pas
+    // de sens, et la garder ferait retomber en page 3 au retrait du filtre.
     const onPageChange = vi.fn();
     renderAvecProviders(
       <Table totalRecords={0} recordsPerPage={10} page={3} onPageChange={onPageChange} />,
+    );
+    expect(onPageChange).toHaveBeenCalledWith(1);
+  });
+
+  it('ne recale pas un total de 0 PENDANT un chargement (`fetching`)', () => {
+    // Page restaurée depuis l'URL : les données ne sont pas encore arrivées, l'appelant
+    // passe 0 faute de mieux — et doit alors passer `fetching`.
+    const onPageChange = vi.fn();
+    renderAvecProviders(
+      <Table fetching totalRecords={0} recordsPerPage={10} page={3} onPageChange={onPageChange} />,
     );
     expect(onPageChange).not.toHaveBeenCalled();
   });

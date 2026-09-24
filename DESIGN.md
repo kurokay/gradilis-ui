@@ -52,7 +52,8 @@ introduire de styles dépendant du mode sombre.
 1. **Vide** — `<EmptyState title … action={…}>`, avec une action de sortie (bouton
    « Nouveau … »), jamais un blanc.
 2. **Chargement** — `<PageSkeleton>` pour une page (région `role="status"`), `<Skeleton>`
-   Mantine pour un bloc ; `fetching` sur les tables.
+   Mantine pour un bloc ; `fetching` sur les tables — obligatoire si la table reçoit
+   `totalRecords={0}` pendant son chargement, sinon `FittedDataTable` la ramène en page 1.
 3. **Erreur** — `<ErrorState message onRetry>` : expliquée (le rappel générique distingue
    une erreur d'une liste vide), avec relance, annoncée (`role="alert"`). Passer
    `announce={false}` si un `notify.error` l'annonce déjà.

@@ -166,10 +166,11 @@ export function FittedDataTable<T>(props: FittedDataTableProps<T>) {
       typeof totalRecords !== 'number' ||
       typeof recordsPerPage !== 'number' ||
       recordsPerPage <= 0 ||
-      // ⚠️ Pas de recalage tant que le total n'est pas CONNU : pendant un chargement,
-      // l'appelant passe souvent 0 (données absentes), et une page restaurée depuis
-      // l'URL ou les préférences serait ramenée à 1 avant l'arrivée des données.
-      totalRecords <= 0 ||
+      // ⚠️ Pas de recalage PENDANT un chargement (`fetching`) : une page restaurée depuis
+      // l'URL ou les préférences serait ramenée à 1 avant l'arrivée des données. Hors
+      // chargement, un total de 0 est une RÉPONSE (filtre sans résultat) et ramène en
+      // page 1. ⇒ Un appelant qui passe `totalRecords={0}` faute de données pendant son
+      // chargement DOIT passer `fetching` — sinon sa page restaurée est perdue.
       (rest as { fetching?: boolean }).fetching === true
     ) {
       return;
