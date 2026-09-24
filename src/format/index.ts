@@ -36,6 +36,19 @@ const eurFmt = new Intl.NumberFormat(LOCALE, {
   maximumFractionDigits: 2,
 });
 const pourcentParDecimales = new Map<number, Intl.NumberFormat>();
+const quantiteLibreParDecimales = new Map<number, Intl.NumberFormat>();
+const eurArrondiFmt = new Intl.NumberFormat(LOCALE, {
+  style: 'currency',
+  currency: 'EUR',
+  minimumFractionDigits: 0,
+  maximumFractionDigits: 0,
+});
+const prixUnitaireFmt = new Intl.NumberFormat(LOCALE, {
+  style: 'currency',
+  currency: 'EUR',
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 4,
+});
 const dateCourtFmt = new Intl.DateTimeFormat(LOCALE, {
   day: '2-digit',
   month: '2-digit',
@@ -122,6 +135,50 @@ export function formatEUR(n: Nullable<number>): string {
 export function formatQuantite(n: Nullable<number>): string {
   if (n === null || n === undefined || Number.isNaN(n)) return PLACEHOLDER;
   return quantiteFmt.format(n);
+}
+
+/**
+ * Quantité SANS zéros forcés (lot L3, compat magasin `fmtQty`) : au plus
+ * `maxDecimales` décimales, ZÉRO au minimum — `70` pièces ne s'affiche jamais
+ * « 70,000 ». Distinct de `formatQuantite` (toujours 0 décimale, un ENTIER
+ * arrondi) et de `formatNumber(n, decimales)` (décimales FIXES, imposées).
+ */
+export function formatQuantiteLibre(n: Nullable<number>, maxDecimales = 3): string {
+  if (n === null || n === undefined || Number.isNaN(n)) return PLACEHOLDER;
+  let fmt = quantiteLibreParDecimales.get(maxDecimales);
+  if (!fmt) {
+    fmt = new Intl.NumberFormat(LOCALE, { maximumFractionDigits: maxDecimales });
+    quantiteLibreParDecimales.set(maxDecimales, fmt);
+  }
+  return fmt.format(n);
+}
+
+/**
+ * Montant en euros ARRONDI à l'unité (0 décimale) — compat magasin
+ * `fmtCurrencyRounded`. Distinct de `formatEUR` (toujours 2 décimales) : réservé
+ * aux affichages qui font explicitement le choix de l'euro entier (un total
+ * gros-grain), jamais un remplacement général de `formatEUR`.
+ *
+ * Neutralise le signe du seul cas où le montant arrondit à zéro : sans ça,
+ * un montant tel que -0,3 s'affiche « -0 € », qui n'existe pas en comptabilité
+ * (l'arrondi *half-expand* d'`Intl` n'entre en jeu qu'à partir de 0,5).
+ */
+export function formatEURArrondi(n: Nullable<number>): string {
+  if (n === null || n === undefined || Number.isNaN(n)) return PLACEHOLDER;
+  const sansMoinsZero = Math.abs(n) < 0.5 ? 0 : n;
+  return eurArrondiFmt.format(sansMoinsZero);
+}
+
+/**
+ * Prix UNITAIRE en euros : 2 décimales au minimum, 4 au maximum, sans zéros
+ * forcés au-delà de 2 — compat magasin `fmtUnitPrice`. Distinct de `formatEUR`
+ * (toujours exactement 2 décimales) : réservé à un prix unitaire dont la
+ * saisie porte une échelle plus fine que le centime (ex. un prix d'achat à 4
+ * décimales) — un MONTANT (total, facture) reste sur `formatEUR`, au centime.
+ */
+export function formatPrixUnitaire(n: Nullable<number>): string {
+  if (n === null || n === undefined || Number.isNaN(n)) return PLACEHOLDER;
+  return prixUnitaireFmt.format(n);
 }
 
 /** Pourcentage — `n` est un ratio ∈ [0,1] (0,42 → « 42 % »). */

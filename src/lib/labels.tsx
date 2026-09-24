@@ -47,6 +47,23 @@ export interface GradilisLabels {
     tooltip: string;
     ariaLabel: string;
   };
+  /**
+   * États génériques (lot L3 — `ErrorState`, `StatusScreen`, `PageSkeleton`).
+   * Sous-section distincte : ajoutée après coup, elle ne touche à rien
+   * au-dessus.
+   */
+  states: {
+    /** Titre par défaut d'`ErrorState` (surchargeable par sa prop `title`). */
+    errorTitle: string;
+    /** Rappel qui précède le motif serveur — distingue « erreur » de « vide ». */
+    errorHint: string;
+    /** Bouton de relance d'`ErrorState`. */
+    retry: string;
+    /** Bouton de retour d'un écran plein-cadre (`StatusScreen`). */
+    homeAction: string;
+    /** `aria-label` du squelette de page (`PageSkeleton`). */
+    pageLoading: string;
+  };
 }
 
 /**
@@ -63,6 +80,13 @@ export const DEFAULT_LABELS: GradilisLabels = {
     label: 'Auto',
     tooltip: "Ajuster le nombre de lignes à la hauteur de l'écran",
     ariaLabel: 'Ajuster automatiquement le nombre de lignes',
+  },
+  states: {
+    errorTitle: 'Lecture impossible',
+    errorHint: "Ces données n'ont pas pu être lues : ce n'est pas une liste vide.",
+    retry: 'Réessayer',
+    homeAction: "Retour à l'accueil",
+    pageLoading: 'Chargement de la page',
   },
 };
 
@@ -93,6 +117,7 @@ export function GradilisLabelsProvider({
     () => ({
       breadcrumb: { ...DEFAULT_LABELS.breadcrumb, ...value.breadcrumb },
       autoFit: { ...DEFAULT_LABELS.autoFit, ...value.autoFit },
+      states: { ...DEFAULT_LABELS.states, ...value.states },
     }),
     [value],
   );
