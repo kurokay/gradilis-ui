@@ -15,7 +15,7 @@
  * Défendu depuis par `src/version.test.ts` (y lire pourquoi ce n'est pas un
  * `import` du `package.json` : `rootDir: "src"` casserait l'émission).
  */
-export const GRADILIS_UI_VERSION = '0.9.0';
+export const GRADILIS_UI_VERSION = '0.9.1';
 
 // Thème : factory agnostique (API cible).
 export {

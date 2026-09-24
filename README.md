@@ -100,6 +100,13 @@ Pratiques de développement et de test front : [`PRATIQUES-FRONT.md`](./PRATIQUE
 
 ## Journal des versions
 
+- **v0.9.1** — `EmptyState` reconstruit sur le composant `EmptyState` de Mantine 9.6
+  (médaillon 96 px, icône 48 px, titre 600/lg) ; `ErrorState` en hérite. `useAutoPageSize` :
+  `ready` seulement une fois en-tête, pied de pagination et vraie ligne mesurés (plus de
+  tailles successives au premier rendu d'une liste serveur). `format` : une valeur non
+  numérique (chaîne `'abc'`) rend le placeholder `—` au lieu de « NaN ». `FittedDataTable` :
+  le recalage de page n'est suspendu que pendant `fetching` — un total de 0 hors chargement
+  ramène en page 1 (passer `fetching` si la table reçoit 0 pendant son chargement).
 - **v0.9.0** — `notify` : priorités d'affichage (erreur > avertissement > succès/info,
   chargement au niveau erreur) et issue `'warning'` de `resolve`. `Num` : prop `regime`
   (HT/TTC/TVA), `configureNum({ regimeLabel, guardMoneyRegime })`. `FittedDataTable` :
