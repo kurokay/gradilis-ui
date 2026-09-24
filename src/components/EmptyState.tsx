@@ -2,7 +2,7 @@
  * EmptyState — bloc générique pour un écran/section rendu à vide : icône,
  * titre, description optionnelle, action optionnelle, centrés verticalement.
  *
- * Vendoré de `gradilis_magasin/frontend/src/components/EmptyState.tsx` (lot L3).
+ * Repris de l'app de référence (backport).
  * Volontairement construit sur les primitives Mantine (`Stack`/`ThemeIcon`/`Text`)
  * plutôt que sur un composant `EmptyState` propre à `@mantine/core` : le peer
  * range du socle couvre `>=9.5.0`, et rien ne garantit qu'un tel composant

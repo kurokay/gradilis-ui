@@ -1,7 +1,7 @@
 /**
  * ErrorState — « on n'a PAS PU lire », par opposition à « il n'y a rien ».
  *
- * Vendoré de `gradilis_magasin/frontend/src/components/ErrorState.tsx` (lot L3).
+ * Repris de l'app de référence (backport).
  *
  * ⚠️ Raison d'être : un échec de chargement rendu comme un état vide est un des
  * défauts les plus coûteux de ces écrans — « Aucune donnée » après un 500 est un

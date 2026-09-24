@@ -4,7 +4,7 @@
  * d'une page type (en-tête titre + sous-titre + action, puis bloc de contenu)
  * pour une transition douce.
  *
- * Vendoré de `gradilis_magasin/frontend/src/components/PageSkeleton.tsx` (lot L3).
+ * Repris de l'app de référence (backport).
  * ⚠️ `role="status"` : un `aria-label` seul sur un `<div>` sans rôle est un
  * `aria-prohibited-attr` (règle axe) — même piège que documenté dans le canon
  * du socle (`CanonStates`). `aria-busy` complète le rôle (DESIGN.md §5, état 2).

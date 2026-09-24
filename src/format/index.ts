@@ -138,7 +138,7 @@ export function formatQuantite(n: Nullable<number>): string {
 }
 
 /**
- * Quantité SANS zéros forcés (lot L3, compat magasin `fmtQty`) : au plus
+ * Quantité SANS zéros forcés (compatible avec le `fmtQty` de l'app de référence) : au plus
  * `maxDecimales` décimales, ZÉRO au minimum — `70` pièces ne s'affiche jamais
  * « 70,000 ». Distinct de `formatQuantite` (toujours 0 décimale, un ENTIER
  * arrondi) et de `formatNumber(n, decimales)` (décimales FIXES, imposées).

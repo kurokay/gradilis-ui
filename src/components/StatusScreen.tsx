@@ -2,7 +2,7 @@
  * StatusScreen — écran d'état plein-cadre partagé par les gardes de route
  * (accès refusé, module non activé, etc.).
  *
- * Vendoré de `gradilis_magasin/frontend/src/components/StatusScreen.tsx` (lot L3).
+ * Repris de l'app de référence (backport).
  * Une seule source de vérité pour l'icône ronde, le titre, le message et le
  * bouton de retour : un ajustement d'espacement/a11y/charte se fait ici et
  * profite à tous les écrans qui le consomment.

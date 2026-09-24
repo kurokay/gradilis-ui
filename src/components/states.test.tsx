@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 /**
- * Tests des composants d'état d'écran (lot L3) : rendu, sémantique a11y
+ * Tests des composants d'état d'écran : rendu, sémantique a11y
  * (vitest-axe) et respect du contrat d'injection de libellés
  * (`GradilisLabelsProvider`). Environnement jsdom, patron `primitives.test.tsx`.
  */
