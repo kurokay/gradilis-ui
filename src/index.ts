@@ -15,7 +15,7 @@
  * Défendu depuis par `src/version.test.ts` (y lire pourquoi ce n'est pas un
  * `import` du `package.json` : `rootDir: "src"` casserait l'émission).
  */
-export const GRADILIS_UI_VERSION = '0.8.0';
+export const GRADILIS_UI_VERSION = '0.9.0';
 
 // Thème : factory agnostique (API cible).
 export {
@@ -62,7 +62,18 @@ export {
 } from './theme.js';
 
 // Primitives vendorées du magasin (DM-7) — conventions playbook §4.
-export { Num, configureNum } from './components/Num.js';
+export {
+  Num,
+  configureNum,
+  regimeLabel,
+  assertRegimeOnMoney,
+  looksLikeMoney,
+  MONEY_MARKER,
+  type MoneyRegime,
+  type RegimeLabelForm,
+  type NumConfig,
+  type NumProps,
+} from './components/Num.js';
 export { PageBreadcrumb, type Crumb } from './components/PageBreadcrumb.js';
 export { FittedDataTable } from './components/FittedDataTable.js';
 export {
