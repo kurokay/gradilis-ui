@@ -56,7 +56,7 @@ describe('useTablePrefs — fit.enabled reflète l’option autoFit', () => {
 describe('useTablePrefs — revalidateKey (option additive, transmise sans planter)', () => {
   it('accepte un revalidateKey qui change entre deux rendus', () => {
     const { result, rerender } = renderHook(
-      ({ key }: { key: unknown }) =>
+      ({ key }: { key: number }) =>
         useTablePrefs('test-revalidate-key', { autoFit: true, revalidateKey: key }),
       { initialProps: { key: 1 } },
     );

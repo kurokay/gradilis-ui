@@ -36,7 +36,11 @@ export interface ErrorStateProps {
   onRetry: () => void;
   /** Titre — surcharge le libellé injecté/par défaut. */
   title?: string;
-  /** Pose `role="alert"` (défaut `true`) — mettre `false` si déjà annoncé ailleurs. */
+  /**
+   * Pose `role="alert"` (défaut `true`). ⚠️ Mettre `false` quand l'échec est DÉJÀ
+   * annoncé ailleurs — typiquement par un `notify.error`, lui-même `role="alert"` :
+   * sinon le lecteur d'écran l'énonce deux fois.
+   */
   announce?: boolean;
 }
 
@@ -59,7 +63,8 @@ export function ErrorState({ message, onRetry, title, announce = true }: ErrorSt
   );
   if (!announce) return content;
   return (
-    <div role="alert" aria-live="assertive">
+    // `role="alert"` implique déjà `aria-live="assertive"` : ne pas le doubler.
+    <div role="alert">
       {content}
     </div>
   );

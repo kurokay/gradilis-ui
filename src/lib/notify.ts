@@ -111,8 +111,9 @@ export function errorMessage(e: unknown, fallback = 'Une erreur est survenue'): 
 const icon = (Cmp: typeof IconCheck) => createElement(Cmp, { size: ICON_SIZE });
 
 /**
- * Priorités d'affichage (`priority` de `NotificationData`, Mantine ≥ 9.6 ;
- * ignoré sans erreur en 9.5). Au-delà de la limite de toasts simultanés,
+ * Priorités d'affichage (`priority` de `NotificationData`, Mantine ≥ 9.6 — d'où le
+ * plancher des peers : en 9.5 le champ n'est pas reconnu et finit en attribut DOM).
+ * Au-delà de la limite de toasts simultanés,
  * Mantine affiche les priorités les plus hautes en premier — une erreur ne doit
  * jamais être éclipsée par une rafale de succès. Un appelant qui passe SA propre
  * `priority` dans `opts` prime toujours (`...opts` en dernier).

@@ -1,7 +1,7 @@
 /**
  * CanonTable — tableau métier de référence (§5/§9) : mantine-datatable via
  * `FittedDataTable` (auto-fit), tri/recherche/pagination client via
- * `useTablePrefs`, textes FR (`dataTableTextesFR` spreadé par FittedDataTable),
+ * `useTablePrefs`, textes FR (fournis par `GradilisLabelsProvider`, défauts `dataTableTextesFR`),
  * chiffres `<Num>` + format FR (M.3), agrégats en pied FOURNIS PAR LES DONNÉES
  * (pattern Chantier C : ils viendront du backend, jamais recalculés par la lib).
  *

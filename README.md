@@ -42,7 +42,7 @@ Dans le `package.json` d'une app :
 (La forme longue `git+https://github.com/kurokay/gradilis-ui.git#vX.Y.Z` est équivalente.)
 
 ⚠️ **Les `peerDependencies` fixent les majeures de l'app consommatrice** (Node 24,
-Mantine ≥ 9.5, `react-router` ≥ 7 si `spatial`, zod 3.25 ou 4). Monter le tag peut donc
+Mantine ≥ 9.6, `react-router` ≥ 7 si `spatial`, zod 3.25 ou 4). Monter le tag peut donc
 exiger des montées dans l'app : lire `npm ls --all` après l'installation, un `npm install`
 qui réussit ne suffit pas à le prouver.
 

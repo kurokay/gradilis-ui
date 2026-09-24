@@ -171,6 +171,13 @@ describe('FittedDataTable — affordance « Auto »', () => {
     expect(screen.queryByRole('button', { name: DEFAULT_LABELS.autoFit.ariaLabel })).toBeNull();
   });
 
+  it('fit sans `enabled` (construit hors du hook) : le bouton Auto reste rendu', () => {
+    renderAvecProviders(
+      <Table fit={{ enabled: undefined }} totalRecords={40} recordsPerPage={10} page={1} onPageChange={() => {}} />,
+    );
+    expect(screen.getByRole('button', { name: DEFAULT_LABELS.autoFit.ariaLabel })).toBeTruthy();
+  });
+
   it('fit.enabled=true : le bouton Auto est rendu', () => {
     renderAvecProviders(
       <Table
@@ -210,6 +217,23 @@ describe('FittedDataTable — recalage de `page` hors bornes', () => {
     expect(onPageChange).not.toHaveBeenCalled();
   });
 
+  it('ne recale pas tant que le total est inconnu (0 pendant un chargement)', () => {
+    // Page restaurée depuis l'URL : les données ne sont pas encore arrivées.
+    const onPageChange = vi.fn();
+    renderAvecProviders(
+      <Table totalRecords={0} recordsPerPage={10} page={3} onPageChange={onPageChange} />,
+    );
+    expect(onPageChange).not.toHaveBeenCalled();
+  });
+
+  it('ne recale pas pendant un rechargement (`fetching`)', () => {
+    const onPageChange = vi.fn();
+    renderAvecProviders(
+      <Table fetching totalRecords={5} recordsPerPage={10} page={3} onPageChange={onPageChange} />,
+    );
+    expect(onPageChange).not.toHaveBeenCalled();
+  });
+
   it('ne plante pas sur recordsPerPage=0 (repli défensif)', () => {
     const onPageChange = vi.fn();
     expect(() =>
@@ -233,5 +257,24 @@ describe('FittedDataTable — attributs data-*', () => {
       />,
     );
     expect(container.querySelector('[data-tour="ancre-test"]')).toBeTruthy();
+  });
+});
+
+describe('FittedDataTable — contrat de type', () => {
+  it('les libellés de chrome ne sont pas acceptés par le type des props', () => {
+    const ref = { current: null };
+    const fit = { ref, height: 0, isAuto: false, resetToAuto: () => {}, ready: true };
+    // Vérifié par `npm run typecheck` : si le type les acceptait de nouveau, les
+    // directives ci-dessous deviendraient inutiles et tsc échouerait.
+    const el = (
+      <FittedDataTable
+        fit={fit}
+        records={ROWS}
+        columns={COLUMNS}
+        // @ts-expect-error — retiré du type : passer par GradilisLabelsProvider
+        paginationText={() => 'x'}
+      />
+    );
+    expect(el).toBeTruthy();
   });
 });

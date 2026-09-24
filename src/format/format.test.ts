@@ -103,6 +103,20 @@ describe('formatPourcent', () => {
   });
 });
 
+describe('formatQuantiteLibre — résidus et bornes', () => {
+  it("n'affiche jamais « -0 » pour un résidu flottant négatif", () => {
+    expect(formatQuantiteLibre(0.1 + 0.2 - 0.3 - 1e-16)).toBe('0');
+    expect(formatQuantiteLibre(-0.0002)).toBe('0');
+    expect(formatQuantiteLibre(-0.0002, 4)).toBe('-0,0002');
+  });
+  it('borne maxDecimales au lieu de lever une RangeError', () => {
+    expect(() => formatQuantiteLibre(1.5, 2.7)).not.toThrow();
+    expect(() => formatQuantiteLibre(1.5, -1)).not.toThrow();
+    expect(() => formatQuantiteLibre(1.5, 99)).not.toThrow();
+    expect(formatQuantiteLibre(1.5, -1)).toBe('2');
+  });
+});
+
 describe('formatQuantiteLibre', () => {
   it('entier — aucun zéro forcé (compat magasin fmtQty)', () => {
     expect(formatQuantiteLibre(70)).toBe('70');

@@ -145,6 +145,11 @@ export function formatQuantite(n: Nullable<number>): string {
  */
 export function formatQuantiteLibre(n: Nullable<number>, maxDecimales = 3): string {
   if (n === null || n === undefined || Number.isNaN(n)) return PLACEHOLDER;
+  // Borne ce qu'`Intl` accepte (entier 0-20) : sinon RangeError en plein rendu.
+  maxDecimales = Math.min(20, Math.max(0, Math.trunc(maxDecimales) || 0));
+  // Un résidu flottant négatif qui s'arrondit à zéro (0,1 + 0,2 − 0,3) ne doit pas
+  // s'afficher « -0 » — même garde que `formatEURArrondi`.
+  if (Math.abs(n) < 0.5 * 10 ** -maxDecimales) n = 0;
   let fmt = quantiteLibreParDecimales.get(maxDecimales);
   if (!fmt) {
     fmt = new Intl.NumberFormat(LOCALE, { maximumFractionDigits: maxDecimales });
@@ -222,13 +227,15 @@ export const dataTableTextesFR = {
  * TypeScript exige les props page/totalRecords…). Cf. `dataTableTextesFR` pour
  * l'objet fusionné utilisé côté pépinière.
  */
+// ⚠️ Dérivées de `dataTableTextesFR`, jamais recopiées : `FittedDataTable` reconnaît
+// le texte vide GÉNÉRIQUE par sa VALEUR, et les défauts de `GradilisLabelsProvider`
+// en dérivent aussi — deux littéraux qui divergeraient casseraient cette égalité.
 export const dataTableFr = {
-  noRecordsText: 'Aucun enregistrement',
+  noRecordsText: dataTableTextesFR.noRecordsText,
 } as const;
 
 export const dataTableFrPagination = {
-  loadingText: 'Chargement…',
-  recordsPerPageLabel: 'Lignes par page',
-  paginationText: ({ from, to, totalRecords }: { from: number; to: number; totalRecords: number }) =>
-    `${from}–${to} sur ${totalRecords}`,
+  loadingText: dataTableTextesFR.loadingText,
+  recordsPerPageLabel: dataTableTextesFR.recordsPerPageLabel,
+  paginationText: dataTableTextesFR.paginationText,
 } as const;

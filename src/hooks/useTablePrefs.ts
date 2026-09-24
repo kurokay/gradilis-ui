@@ -11,7 +11,7 @@
  */
 import { useState, useCallback } from 'react';
 import type { DataTableSortStatus } from 'mantine-datatable';
-import { useTableAutoFit, type TableAutoFit } from './useTableAutoFit.js';
+import { useTableAutoFit, type RevalidateKey, type TableAutoFit } from './useTableAutoFit.js';
 
 interface UseTablePrefsOptions<T> {
   /** Taille de page par défaut (avant lecture du localStorage). */
@@ -25,7 +25,7 @@ interface UseTablePrefsOptions<T> {
    * Signal de re-mesure de l'auto-fit — à bouger quand un bloc AU-DESSUS de la table
    * se replie/déplie. Voir `useTableAutoFit` : sans lui, le repli ne libère que du blanc.
    */
-  revalidateKey?: unknown;
+  revalidateKey?: RevalidateKey;
   /**
    * Clés de tri **DÉRIVÉES** — `{ <accessor> : (ligne) => valeur comparable }`.
    *

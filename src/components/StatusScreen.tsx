@@ -12,7 +12,7 @@
  * via `GradilisLabelsProvider` (`labels.states.homeAction`).
  */
 import { Link } from 'react-router';
-import { Center, Stack, Text, ThemeIcon, Button } from '@mantine/core';
+import { Center, Stack, Text, ThemeIcon, Title, Button } from '@mantine/core';
 import { IconHome } from '@tabler/icons-react';
 import type { ReactNode } from 'react';
 import { useGradilisLabels } from '../lib/labels.js';
@@ -42,9 +42,11 @@ export function StatusScreen({ icon, title, description, mih = '100vh', homeTo =
           {icon}
         </ThemeIcon>
         <div style={{ textAlign: 'center' }}>
-          <Text fw={600} fz="lg">
+          {/* Vrai titre de page (h1) : l'écran d'état REMPLACE le contenu de la page,
+              et un lecteur d'écran doit pouvoir y sauter par les titres. */}
+          <Title order={1} fw={600} fz="lg">
             {title}
-          </Text>
+          </Title>
           <Text size="sm" c="dimmed" mt={4} maw={360}>
             {description}
           </Text>

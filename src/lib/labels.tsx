@@ -32,6 +32,7 @@
  * par la primaire du thème (voir le commentaire sur place).
  */
 import { createContext, useContext, useMemo, type ReactNode } from 'react';
+import { dataTableTextesFR } from '../format/index.js';
 
 export interface GradilisLabels {
   /** `PageBreadcrumb`. */
@@ -93,12 +94,8 @@ export const DEFAULT_LABELS: GradilisLabels = {
     tooltip: "Ajuster le nombre de lignes à la hauteur de l'écran",
     ariaLabel: 'Ajuster automatiquement le nombre de lignes',
   },
-  dataTable: {
-    noRecordsText: 'Aucun enregistrement',
-    loadingText: 'Chargement…',
-    recordsPerPageLabel: 'Lignes par page',
-    paginationText: ({ from, to, totalRecords }) => `${from}–${to} sur ${totalRecords}`,
-  },
+  // Source unique des textes FR de DataTable : `dataTableTextesFR` (module format).
+  dataTable: { ...dataTableTextesFR },
   states: {
     errorTitle: 'Lecture impossible',
     errorHint: "Ces données n'ont pas pu être lues : ce n'est pas une liste vide.",

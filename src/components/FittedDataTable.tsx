@@ -56,7 +56,15 @@ import type { TableAutoFit } from '../hooks/useTableAutoFit.js';
  */
 const CHROME_LABEL_KEYS = ['loadingText', 'recordsPerPageLabel', 'paginationText'];
 
-type FittedDataTableProps<T> = DataTableProps<T> & {
+/**
+ * ⚠️ Les clés de `CHROME_LABEL_KEYS` sont RETIRÉES du type : le wrapper les ignore,
+ * et un appelant qui les passerait doit le voir à la compilation plutôt que de
+ * perdre son texte en silence. Pour les changer, passer par `GradilisLabelsProvider`.
+ */
+type FittedDataTableProps<T> = Omit<
+  DataTableProps<T>,
+  'loadingText' | 'recordsPerPageLabel' | 'paginationText'
+> & {
   /** Bundle renvoyé par `useTablePrefs`/`useServerTable` (option `autoFit`). */
   fit: TableAutoFit['fit'];
   /**
@@ -157,13 +165,18 @@ export function FittedDataTable<T>(props: FittedDataTableProps<T>) {
       typeof onPageChange !== 'function' ||
       typeof totalRecords !== 'number' ||
       typeof recordsPerPage !== 'number' ||
-      recordsPerPage <= 0
+      recordsPerPage <= 0 ||
+      // ⚠️ Pas de recalage tant que le total n'est pas CONNU : pendant un chargement,
+      // l'appelant passe souvent 0 (données absentes), et une page restaurée depuis
+      // l'URL ou les préférences serait ramenée à 1 avant l'arrivée des données.
+      totalRecords <= 0 ||
+      (rest as { fetching?: boolean }).fetching === true
     ) {
       return;
     }
     const maxPage = Math.max(1, Math.ceil(totalRecords / recordsPerPage));
     if (page > maxPage) onPageChange(maxPage);
-  }, [page, onPageChange, totalRecords, recordsPerPage]);
+  }, [page, onPageChange, totalRecords, recordsPerPage, (rest as { fetching?: boolean }).fetching]);
 
   // En mode auto, on injecte la taille calculée dans les options pour que le
   // sélecteur natif l'affiche comme valeur courante (il n'accepte que des nombres).
@@ -186,7 +199,7 @@ export function FittedDataTable<T>(props: FittedDataTableProps<T>) {
           répond rien. La décision se prend ici, pas chez l'appelant : lui ne fait
           que ne pas passer `autoFit`.
         */}
-        {fit.enabled && <AutoButton active={fit.isAuto} onActivate={fit.resetToAuto} />}
+        {fit.enabled !== false && <AutoButton active={fit.isAuto} onActivate={fit.resetToAuto} />}
       </Group>
       <Controls.Pagination />
     </>

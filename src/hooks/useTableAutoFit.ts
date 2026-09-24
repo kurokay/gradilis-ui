@@ -36,8 +36,15 @@ interface UseTableAutoFitOptions {
    * ⚠️ Si le repli est ANIMÉ, bouger la clé à la FIN de la transition — sinon la
    * mesure lit une hauteur intermédiaire, et plus rien ne la corrige ensuite.
    */
-  revalidateKey?: unknown;
+  revalidateKey?: RevalidateKey;
 }
+
+/**
+ * Clé PRIMITIVE : elle est comparée par sa représentation texte, donc un objet
+ * donnerait toujours « [object Object] » et ne déclencherait jamais de re-mesure.
+ * Pour plusieurs états, les joindre : `` `${helpOpen}|${kpiCollapsed}` ``.
+ */
+export type RevalidateKey = string | number | boolean | null | undefined;
 
 export interface TableAutoFit {
   /** Taille de page EFFECTIVE (auto calculée, estimation, ou choix manuel). */
@@ -53,9 +60,10 @@ export interface TableAutoFit {
     /**
      * L'auto-fit est-il activé sur cette table ? Le wrapper s'en sert pour n'émettre
      * l'affordance « Auto » que là où elle AGIT : sans auto-fit, `resetToAuto` est un
-     * no-op et le bouton serait mort.
+     * no-op et le bouton serait mort. Optionnel pour les `fit` construits hors de
+     * ce hook : absent, il vaut `true` (comportement antérieur, bouton affiché).
      */
-    enabled: boolean;
+    enabled?: boolean;
     ref: React.RefObject<HTMLDivElement | null>;
     /** Hauteur (px) à appliquer quand la pagination est nécessaire ; 0 sinon. */
     height: number;
