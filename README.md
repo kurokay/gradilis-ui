@@ -169,9 +169,15 @@ petit banc Vite (`visual/`, jamais publié — voir `visual/README.md`).
 
 ## Journal des versions
 
-- **(non publié)** — Tests de non-régression visuelle du canon (Playwright,
-  Chrome système, 28 captures section × marque × schéma), voir § ci-dessus.
-  Aucun changement de comportement du socle.
+- **v0.9.2** — `notify` : le bouton de fermeture des toasts a un nom accessible,
+  « Fermer la notification » (la croix de Mantine n'en avait aucun : axe `button-name`,
+  critique, sur chaque toast affiché). Toutes les variantes (`success`, `error` — chaîne
+  ou exception —, `warning`, `info`, `resolve` à ses trois issues, `loading` si sa croix
+  est rétablie). Un `closeButtonProps` passé par l'appelant complète ce nom sans
+  l'effacer (son propre `aria-label` prime). Aucune action requise dans les apps.
+  Inclut aussi les tests de non-régression visuelle du canon (Playwright, Chrome
+  système, 28 captures section × marque × schéma, voir § ci-dessus) — outillage de
+  développement seulement, sans changement de comportement.
 - **v0.9.1** — `EmptyState` reconstruit sur le composant `EmptyState` de Mantine 9.6
   (médaillon 96 px, icône 48 px, titre 600/lg) ; `ErrorState` en hérite. `useAutoPageSize` :
   `ready` seulement une fois en-tête, pied de pagination et vraie ligne mesurés (plus de
