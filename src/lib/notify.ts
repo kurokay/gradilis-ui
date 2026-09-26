@@ -15,6 +15,8 @@
  *   (assertif) par défaut sur TOUTE notification. On force donc `role="status"`
  *   (poli) sur succès/info pour ne pas interrompre l'utilisateur, et on garde
  *   `role="alert"` (assertif) sur erreur/warning.
+ * - Nommer le bouton de fermeture (« Fermer la notification ») : la croix de
+ *   Mantine n'a pas de nom accessible (axe `button-name`, cf. `CLOSE_LABEL`).
  * - Absorber `errorMessage()` (extraction du message d'erreur API).
  * - Factoriser le pattern « chargement → succès/erreur » (`loading`/`resolve`).
  * - Prioriser erreurs/avertissements au-delà de la limite de toasts (backport
@@ -111,6 +113,28 @@ export function errorMessage(e: unknown, fallback = 'Une erreur est survenue'): 
 const icon = (Cmp: typeof IconCheck) => createElement(Cmp, { size: ICON_SIZE });
 
 /**
+ * Nom accessible du bouton de fermeture des toasts (WCAG 4.1.2, axe `button-name`).
+ *
+ * ⚠️ Le `CloseButton` de `Notification` (Mantine) ne rend qu'une icône SVG, sans
+ * texte ni `aria-label` : sans ce nom, CHAQUE toast affiché ajoute à la page un
+ * bouton qu'un lecteur d'écran annonce « bouton », sans plus (mesuré au
+ * navigateur dans la pépinière, axe critique). Précisé par rapport au « Fermer »
+ * des croix de modale : un toast peut s'afficher PAR-DESSUS une modale ouverte,
+ * et deux boutons « Fermer » ne se distingueraient plus.
+ */
+const CLOSE_LABEL = 'Fermer la notification';
+
+/**
+ * `closeButtonProps` nommé, FUSIONNÉ avec celui de l'appelant : à poser APRÈS
+ * `...opts`, sinon un `closeButtonProps` passé pour une autre raison (un
+ * `data-*`, un style) écraserait l'objet entier et ferait perdre le nom. Un
+ * `aria-label` fourni par l'appelant prime toujours.
+ */
+const closeButton = (opts?: NotifyOptions): Pick<NotificationData, 'closeButtonProps'> => ({
+  closeButtonProps: { 'aria-label': CLOSE_LABEL, ...opts?.closeButtonProps },
+});
+
+/**
  * Priorités d'affichage (`priority` de `NotificationData`, Mantine ≥ 9.6 — d'où le
  * plancher des peers : en 9.5 le champ n'est pas reconnu et finit en attribut DOM).
  * Au-delà de la limite de toasts simultanés,
@@ -138,7 +162,7 @@ const PRIORITY_DEFAULT = 0;
 export const notify = {
   /** Succès (vert sémantique + IconCheck, annonce polie `role="status"`). */
   success(message: React.ReactNode, opts?: NotifyOptions): string {
-    return notifications.show({ color: colors.success, icon: icon(IconCheck), role: 'status', priority: PRIORITY_DEFAULT, message, ...opts });
+    return notifications.show({ color: colors.success, icon: icon(IconCheck), role: 'status', priority: PRIORITY_DEFAULT, message, ...opts, ...closeButton(opts) });
   },
 
   /**
@@ -158,17 +182,18 @@ export const notify = {
       priority: PRIORITY_ERROR,
       message,
       ...opts,
+      ...closeButton(opts),
     });
   },
 
   /** Information neutre (ardoise + IconInfoCircle, annonce polie `role="status"`). */
   info(message: React.ReactNode, opts?: NotifyOptions): string {
-    return notifications.show({ color: colors.info, icon: icon(IconInfoCircle), role: 'status', priority: PRIORITY_DEFAULT, message, ...opts });
+    return notifications.show({ color: colors.info, icon: icon(IconInfoCircle), role: 'status', priority: PRIORITY_DEFAULT, message, ...opts, ...closeButton(opts) });
   },
 
   /** Avertissement (ambre + IconAlertTriangle, annonce assertive `role="alert"`). */
   warning(message: React.ReactNode, opts?: NotifyOptions): string {
-    return notifications.show({ color: colors.warning, icon: icon(IconAlertTriangle), role: 'alert', priority: PRIORITY_WARNING, message, ...opts });
+    return notifications.show({ color: colors.warning, icon: icon(IconAlertTriangle), role: 'alert', priority: PRIORITY_WARNING, message, ...opts, ...closeButton(opts) });
   },
 
   /**
@@ -186,6 +211,9 @@ export const notify = {
       // Seul toast PERSISTANT : priorité au niveau ERREUR (cf. `PRIORITY_LOADING`).
       priority: PRIORITY_LOADING,
       ...opts,
+      // Sans bouton par défaut, mais nommé d'avance : un appelant peut le rétablir
+      // (`withCloseButton: true`), et `notifications.update` conserve ce champ.
+      ...closeButton(opts),
     });
     return id;
   },
@@ -208,7 +236,7 @@ export const notify = {
         : outcome
           ? { color: colors.success, icon: icon(IconCheck), autoClose: 3000, role: 'status' as const, priority: PRIORITY_DEFAULT }
           : { color: colors.error, icon: icon(IconX), autoClose: 8000, role: 'alert' as const, priority: PRIORITY_ERROR };
-    notifications.update({ id, message, loading: false, withCloseButton: true, ...base, ...opts });
+    notifications.update({ id, message, loading: false, withCloseButton: true, ...base, ...opts, ...closeButton(opts) });
   },
 };
 
