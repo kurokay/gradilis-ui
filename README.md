@@ -169,6 +169,11 @@ petit banc Vite (`visual/`, jamais publié — voir `visual/README.md`).
 
 ## Journal des versions
 
+- **v0.9.3** — `<Num regime>` rend montant et marqueur (« HT », « TTC », « TVA ») dans
+  UN seul `span` au lieu d'un fragment. Dans un parent flex, le fragment faisait deux items :
+  sous `Group justify="space-between"`, le montant tombait au milieu et le marqueur restait
+  seul au bord droit. Le marqueur reste frère de la valeur, hors de la classe de floutage.
+  Aucune action requise dans les apps.
 - **v0.9.2** — `notify` : le bouton de fermeture des toasts a un nom accessible,
   « Fermer la notification » (la croix de Mantine n'en avait aucun : axe `button-name`,
   critique, sur chaque toast affiché). Toutes les variantes (`success`, `error` — chaîne
