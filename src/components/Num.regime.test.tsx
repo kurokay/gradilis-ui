@@ -76,6 +76,19 @@ describe('Num — marqueur de régime', () => {
     expect(value.nextElementSibling?.getAttribute('data-regime')).toBe('ttc');
   });
 
+  it('⚠️ montant + marqueur = UN SEUL nœud pour le parent (jamais un fragment)', () => {
+    // Un fragment faisait DEUX items flex : dans un `Group justify="space-between"`, le
+    // montant tombait au milieu et « HT » restait seul au bord droit.
+    const { getByTestId } = monter(
+      <div data-testid="parent">
+        <Num regime="ht">5,00 €</Num>
+      </div>,
+    );
+    const parent = getByTestId('parent');
+    expect(parent.childNodes).toHaveLength(1);
+    expect(parent.firstElementChild?.querySelector('[data-regime="ht"]')).not.toBeNull();
+  });
+
   it('la classe de l’appelant et `tabular-nums` survivent au marqueur', () => {
     const { container } = monter(
       <Num regime="ht" className="a-moi">

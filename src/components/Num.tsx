@@ -191,8 +191,14 @@ export function Num({ regime, style, className, ...props }: NumProps) {
   // Sans régime : rendu historique à l'identique (aucun fragment, aucun frère).
   if (!regime) return value;
 
+  // ⚠️ UN SEUL nœud, jamais un fragment : rendu dans un parent flex, un fragment fait du
+  // montant et de « HT » DEUX items. Dans un `Group justify="space-between"` (libellé à
+  // gauche, montant à droite — le motif le plus courant d'un récapitulatif), le montant
+  // tombait alors AU MILIEU et « HT » restait seul au bord droit ; un `gap` s'intercalait
+  // entre eux, un `Stack` envoyait « HT » à la ligne. Le `span` nu ne porte PAS la classe
+  // de floutage : le marqueur reste frère de la valeur, hors de l'élément flouté.
   return (
-    <>
+    <span>
       {value}
       <Text
         component="abbr"
@@ -208,6 +214,6 @@ export function Num({ regime, style, className, ...props }: NumProps) {
         {'\u00A0'}
         {regimeLabel(regime, 'short')}
       </Text>
-    </>
+    </span>
   );
 }

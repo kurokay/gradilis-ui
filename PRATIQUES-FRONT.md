@@ -53,6 +53,15 @@ pas ici : elles vivent dans la documentation interne de l'écosystème.
   « Annuler » ; neutraliser la soumission répétée par une touche Entrée maintenue.
 - **Montants** : dire le régime (HT ou TTC) de tout montant affiché ; il se lit au
   sérialiseur, jamais au nom du champ.
+- **Alignement dans les tableaux** : un nombre (quantité, montant, %, compte) s'aligne à
+  DROITE, en-tête compris, pour que les unités se lisent en colonne ; une colonne de gestes
+  (boutons, menu de ligne) aussi. Le centre ne sert qu'aux pastilles catégorielles courtes
+  (statut, calibre). ⚠️ `textAlign`/`ta` ne déplace pas un contenu flex (`Group`, `Stack`) :
+  aligner aussi son `justify`/`align`, sinon la cellule ne bouge pas à l'écran.
+- **Un composant rendu dans un parent flex rend UN seul nœud, jamais un fragment** : chaque
+  nœud d'un fragment devient un item flex. `<Num regime>` rendait montant et « HT » en
+  fragment ⇒ dans `Group justify="space-between"` le montant tombait au MILIEU et « HT »
+  seul au bord droit (corrigé en v0.9.3 : un `span` enveloppe les deux).
 - **Une règle métier que le serveur connaît ne se recalcule pas dans le front** (héritage,
   taxes, cascades) : le serveur la résout et la sert, le front l'affiche.
 
