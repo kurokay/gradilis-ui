@@ -169,6 +169,14 @@ petit banc Vite (`visual/`, jamais publié — voir `visual/README.md`).
 
 ## Journal des versions
 
+- **v0.9.4** — `notify.promise(p, { loading, success, error? }, opts?)` : le pattern
+  « chargement → succès/erreur » autour d'une promesse, construit sur `loading`/`resolve`
+  (icône, `role`, nom du bouton fermer et priorité des erreurs conservés) ; retourne la promesse
+  d'origine, qui reste rejetée en cas d'échec ; pas d'issue `'warning'` (cas partiel : rester sur
+  `loading`/`resolve`). `NOTIFICATIONS_PROVIDER_PROPS` gagne `withAutoCloseProgress: true`
+  (barre de progression des toasts, Mantine ≥ 9.7 ; ignorée en 9.6, peers inchangés).
+  devDependencies Mantine `~9.7.1`. Action dans les apps : aucune obligatoire ; convention :
+  `notify.promise` pour une promesse simple succès/erreur.
 - **v0.9.3** — `<Num regime>` rend montant et marqueur (« HT », « TTC », « TVA ») dans
   UN seul `span` au lieu d'un fragment. Dans un parent flex, le fragment faisait deux items :
   sous `Group justify="space-between"`, le montant tombait au milieu et le marqueur restait
