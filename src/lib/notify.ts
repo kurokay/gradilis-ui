@@ -93,6 +93,9 @@ export const NOTIFICATIONS_PROVIDER_PROPS = {
   'aria-live': 'polite',
   limit: 5,
   autoClose: 4000,
+  // Barre de progression du délai d'auto-fermeture (Mantine ≥ 9.7 ; ignorée en
+  // 9.6, d'où aucun relèvement du plancher des peers).
+  withAutoCloseProgress: true,
 } as const;
 
 /** Options passables à un toast (tout `NotificationData` sauf `message`/`color`,
@@ -237,6 +240,43 @@ export const notify = {
           ? { color: colors.success, icon: icon(IconCheck), autoClose: 3000, role: 'status' as const, priority: PRIORITY_DEFAULT }
           : { color: colors.error, icon: icon(IconX), autoClose: 8000, role: 'alert' as const, priority: PRIORITY_ERROR };
     notifications.update({ id, message, loading: false, withCloseButton: true, ...base, ...opts, ...closeButton(opts) });
+  },
+
+  /**
+   * « Chargement → succès/erreur » autour d'UNE promesse : `loading` puis
+   * `resolve(id, true|false, …)`. Erreur par défaut : `errorMessage(e)`.
+   *
+   * ⚠️ Construit SUR `loading`/`resolve`, jamais sur `notifications.promise` de
+   * Mantine : celui-ci contournerait l'icône, le `role`, le nom du bouton fermer
+   * et la priorité des erreurs au-delà de la limite de toasts.
+   *
+   * ⚠️ Retourne la promesse d'ORIGINE, qui reste REJETÉE en cas d'échec : l'appelant
+   * peut `await`/`catch` (le toast d'erreur est déjà posé, il n'a pas à le refaire).
+   * S'il ignore la valeur de retour, aucun « unhandled rejection » : un gestionnaire
+   * est déjà attaché à `p` ici.
+   *
+   * ⚠️ Pas d'issue `'warning'` : une opération partielle ou une logique
+   * intermédiaire (« 4 envoyés, 2 en échec ») reste sur `loading`/`resolve`.
+   */
+  promise<T>(
+    p: Promise<T>,
+    msgs: {
+      loading: React.ReactNode;
+      success: React.ReactNode | ((value: T) => React.ReactNode);
+      error?: React.ReactNode | ((e: unknown) => React.ReactNode);
+    },
+    opts?: NotifyOptions,
+  ): Promise<T> {
+    const id = notify.loading(msgs.loading, opts);
+    const pick = <A,>(m: React.ReactNode | ((a: A) => React.ReactNode), a: A): React.ReactNode =>
+      typeof m === 'function' ? (m as (a: A) => React.ReactNode)(a) : m;
+    // Le `then` à deux branches consomme le rejet de `p` (rien d'unhandled) ; on
+    // retourne `p` et non cette chaîne dérivée.
+    p.then(
+      (value) => notify.resolve(id, true, pick(msgs.success, value), opts),
+      (e: unknown) => notify.resolve(id, false, msgs.error === undefined ? errorMessage(e) : pick(msgs.error, e), opts),
+    );
+    return p;
   },
 };
 

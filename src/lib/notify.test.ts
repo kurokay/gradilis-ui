@@ -78,3 +78,54 @@ describe('notify.resolve — trois issues', () => {
     expect([0, 1, 2].map((i) => payload(upd, i).color)).toEqual(['vert', 'brique', 'ambre']);
   });
 });
+
+describe('notify.promise', () => {
+  it('succès : loading puis resolve(true), retourne la promesse d’origine', async () => {
+    const show = spyShow();
+    const update = spyUpdate();
+    const p = Promise.resolve(42);
+    const r = notify.promise(p, { loading: 'en cours', success: 'ok' });
+    expect(r).toBe(p);
+    expect(payload(show).loading).toBe(true);
+    await r;
+    await Promise.resolve();
+    expect(payload(update)).toMatchObject({ message: 'ok', loading: false, role: 'status' });
+    expect(payload(update).id).toBe(payload(show).id);
+  });
+
+  it('success et error acceptent une fonction', async () => {
+    const update = spyUpdate();
+    spyShow();
+    await notify.promise(Promise.resolve(3), { loading: 'l', success: (n) => `n=${n}` });
+    await Promise.resolve();
+    expect(payload(update, 0).message).toBe('n=3');
+    const boom = new Error('x');
+    await notify.promise(Promise.reject(boom), { loading: 'l', success: 's', error: (e) => `KO ${(e as Error).message}` }).catch(() => {});
+    await Promise.resolve();
+    expect(payload(update, 1)).toMatchObject({ message: 'KO x', role: 'alert', priority: 2 });
+  });
+
+  it('erreur : message par défaut via errorMessage, rejet conservé pour l’appelant', async () => {
+    const update = spyUpdate();
+    spyShow();
+    const err = { response: { data: { error: 'refusé' } } };
+    await expect(notify.promise(Promise.reject(err), { loading: 'l', success: 's' })).rejects.toBe(err);
+    await Promise.resolve();
+    expect(payload(update).message).toBe('refusé');
+    await expect(notify.promise(Promise.reject(new Error('z')), { loading: 'l', success: 's' })).rejects.toThrow('z');
+    await Promise.resolve();
+    expect(payload(update, 1).message).toBe('Une erreur est survenue');
+  });
+
+  it('⚠️ aucun unhandled rejection si l’appelant ignore la promesse', async () => {
+    spyShow();
+    spyUpdate();
+    const seen: unknown[] = [];
+    const h = (e: unknown) => seen.push(e);
+    process.on('unhandledRejection', h);
+    notify.promise(Promise.reject(new Error('ignoré')), { loading: 'l', success: 's' });
+    await new Promise((r) => setTimeout(r, 20));
+    process.off('unhandledRejection', h);
+    expect(seen).toEqual([]);
+  });
+});

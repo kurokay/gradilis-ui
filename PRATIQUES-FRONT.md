@@ -74,6 +74,12 @@ pas ici : elles vivent dans la documentation interne de l'écosystème.
   l'exécution de la suite prouve qu'ils compilent.
 - **`vi.mock` d'un module utilitaire doit être partiel** (`importOriginal`) : sinon tout ce que
   le module exporte d'autre devient `undefined` dans le test.
+- **`notify.promise(p, { loading, success, error? })`** pour une promesse simple succès/erreur
+  (construit sur `loading`/`resolve`, jamais `notifications.promise`) ; l'issue partielle
+  (`'warning'`) reste sur `loading`/`resolve`.
+- **Tooltip en test happy-dom** : Mantine 9.7 cache toutes les bulles (cibles de taille 0) ;
+  poser `hideDetached: false` sur le `Tooltip` du thème de test, sans `env="test"` qui
+  désactive les portails.
 - **Un garde-fou qu'on n'a jamais vu rougir n'en est pas un** : casser volontairement le code
   protégé, constater le rouge, restaurer. Un test vacueux se propage par copie : corriger tous
   ses frères.
