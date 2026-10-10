@@ -62,6 +62,14 @@ pas ici : elles vivent dans la documentation interne de l'écosystème.
   nœud d'un fragment devient un item flex. `<Num regime>` rendait montant et « HT » en
   fragment ⇒ dans `Group justify="space-between"` le montant tombait au MILIEU et « HT »
   seul au bord droit (corrigé en v0.9.3 : un `span` enveloppe les deux).
+- **Ouvrir un PDF dans un onglet quand l'auth passe par un en-tête** (pas de cookie) : un
+  lien direct prendrait un 401, donc le PDF se récupère en blob ; mais `window.open` APRÈS
+  l'`await` de génération est bloqué comme pop-up (l'activation du clic ne dure qu'environ
+  1 s sous Firefox). Ouvrir l'onglet vide AU CLIC, de façon synchrone, avant tout `await`,
+  puis y poser l'URL du blob (révocation différée, jamais immédiate). Repli téléchargement si
+  l'onglet est bloqué ou sur iOS ; fermer l'onglet si la génération échoue. ⚠️ Un seul `await`
+  placé avant l'appel dans le gestionnaire de clic perd le geste, et le repli téléchargement
+  masque le défaut en silence.
 - **Une règle métier que le serveur connaît ne se recalcule pas dans le front** (héritage,
   taxes, cascades) : le serveur la résout et la sert, le front l'affiche.
 
