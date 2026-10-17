@@ -72,6 +72,31 @@ pas ici : elles vivent dans la documentation interne de l'écosystème.
   masque le défaut en silence.
 - **Une règle métier que le serveur connaît ne se recalcule pas dans le front** (héritage,
   taxes, cascades) : le serveur la résout et la sert, le front l'affiche.
+- **Une barre à débordement (« Plus (n) ») mesure des onglets FANTÔMES : sa rangée de mesure
+  doit recevoir tout ce qui change la LARGEUR** — une classe qui pose `font-weight: 500` sur
+  les vrais onglets et pas sur la rangée invisible fait sous-évaluer TOUTES les largeurs, donc
+  garder un élément de trop en barre, donc déborder : exactement ce que le composant existe
+  pour empêcher. ⚠️ Faire voyager la classe par une prop DÉDIÉE, jamais par le sac d'attributs
+  qui porte les ancres (`data-*`) : un `data-tour` dupliqué sur un élément invisible de 0 px
+  donne au moteur de visites une cible fantôme — on échangerait un défaut de mesure contre un
+  défaut de visite. ⚠️ Et la signature qui déclenche la remesure doit inclure cette classe,
+  sinon un changement de style n'est jamais remesuré.
+- **Une classe passée en prop et posée sur un composant Mantine entre en CONCURRENCE de
+  cascade** : sa racine déclare souvent déjà `position` et `background` à spécificité ÉGALE
+  (0,1,0), et `@mantine/core/styles.css` étant importé sans `@layer`, le gagnant ne dépend que
+  de l'ORDRE des feuilles. Pour un `sticky` ou un fond opaque, envelopper dans un conteneur NU
+  (`<Box className=…>`) plutôt que d'arbitrer cet ordre : les deux issues d'une concurrence
+  sont fausses (pas de collage, ou un remplissage de bouton effacé donc une affordance perdue).
+  ⚠️ Corollaire : un `sticky` ne sort JAMAIS de son parent — posé sur une liste dont le parent
+  fait exactement la même hauteur, il n'a aucune course et ne colle pas.
+- **Une étape de visite guidée qui vise un élément d'une barre à débordement porte un repli**
+  (popover centré) : l'élément part dans le menu « Plus » au BUREAU dès que la largeur manque,
+  pas seulement sur mobile — et un garde-fou qui vérifie que l'ancre EXISTE dans les sources
+  reste vert pendant que l'étape se saute en silence. ⚠️ Ne pas « réparer » en étalant l'ancre
+  sur l'entrée de menu : elle n'existe dans le DOM que menu OUVERT.
+- **Un texte de visite guidée qui COMPTE ou ÉNUMÈRE des sections ment dès qu'une section est
+  gatée** (rôle, module) : dire ce que fait le contrôle, pas combien il contient. Le risque est
+  maximal sur une visite SANS liste de rôles, donc jouable par le profil le plus restreint.
 
 ## 3. Tests front
 
