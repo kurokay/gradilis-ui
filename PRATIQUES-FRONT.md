@@ -87,6 +87,11 @@ pas ici : elles vivent dans la documentation interne de l'écosystème.
   de l'ORDRE des feuilles. Pour un `sticky` ou un fond opaque, envelopper dans un conteneur NU
   (`<Box className=…>`) plutôt que d'arbitrer cet ordre : les deux issues d'une concurrence
   sont fausses (pas de collage, ou un remplissage de bouton effacé donc une affordance perdue).
+  ⚠️⚠️ Et un `sticky` de page se cale **sous l'en-tête fixe**, jamais à `top: 0` : un en-tête `fixed`
+  de 56 px à `z-index` élevé range la barre dessous, où elle n'affiche rien — le collage « marche »
+  (la position est bien `sticky`) et personne ne le voit. Mesurer avec `elementFromPoint`, pas à l'œil.
+  ⚠️ De même, une barre d'onglets tactile porte sa cible de 44 px elle-même : les feuilles de
+  hausse tactile couvrent boutons et champs, rarement les onglets.
   ⚠️ Corollaire : un `sticky` ne sort JAMAIS de son parent — posé sur une liste dont le parent
   fait exactement la même hauteur, il n'a aucune course et ne colle pas.
 - **Une étape de visite guidée qui vise un élément d'une barre à débordement porte un repli**
