@@ -125,6 +125,14 @@ pas ici : elles vivent dans la documentation interne de l'écosystème.
   est celui du dernier maillon. Lire celui de la commande de test.
 - **Un « unhandled error » de Vitest nomme un témoin, pas forcément le coupable** ; un rouge
   intermittent peut venir de la charge machine : rejouer le fichier isolé avant de conclure.
+- **Un `setState` hors `act()` n'est pas vidé, donc un banc de performance peut être VACUEUX** :
+  un test qui compte les rendus d'une page pendant une rafale d'évènements fabriqués reste VERT
+  même après avoir rebranché l'état sur la page hôte. Envelopper le geste dans `act()`, puis
+  revoir la mutation ROUGE — sinon le banc n'éprouve rien.
+- **Une aide de test qui fabrique un évènement doit poser TOUS les champs que le code lit.** Un
+  `TouchEvent` maison sans `clientX` donne un `dx` à `NaN`, et `dy > Math.abs(NaN)` est **faux** :
+  toute la logique part dans la branche d'abandon, en silence. Le symptôme est une volée de bancs
+  existants qui rougissent sur un code pourtant juste — chercher le champ absent, pas la règle.
 - Séparer les tests purs (environnement `node`) des tests qui rendent du DOM : plus rapides,
   et la frontière `.test.ts` / `.test.tsx` se maintient seule.
 - Accessibilité : `vitest-axe` sur les composants, passe axe-core sur les écrans ; mesurer le
@@ -136,6 +144,41 @@ pas ici : elles vivent dans la documentation interne de l'écosystème.
   guidées ou parcours qui l'ancrent.
 - Une affirmation sur les internes d'une lib (Mantine, React Router…) n'entre dans une
   doctrine qu'après mesure : lire la doc à jour, ou écrire le test qui la prouve.
+
+### Tirer-pour-rafraîchir, et la famille de défauts qu'il révèle
+
+Lot A5 de Gradilis Magasin, 2026-10-21 : sept constats, dont quatre sont **génériques**.
+
+- ⚠️⚠️ **`isFetching` n'est pas « l'utilisateur attend quelque chose qu'il a demandé ».** C'est vrai
+  au chargement initial ET à chaque page, tri, filtre ou recherche. Un retour visuel câblé dessus
+  apparaît donc partout, y compris là où le geste qui le justifie n'existe pas — et il double l'état
+  `loading` du bouton d'à côté. Un retour visuel de GESTE se conditionne au geste, jamais à l'état
+  de la requête : compter les déclenchements, et n'afficher que la lecture née de l'un d'eux.
+- ⚠️⚠️ **Un compteur dans un store de MODULE ne retombe jamais à zéro : seuls ses INCRÉMENTS
+  depuis le montage ont un sens.** Lire sa valeur absolue (`triggers > 0`) rouvre exactement le
+  défaut précédent par une autre porte — un composant monté plus tard croit hériter du
+  déclenchement d'un autre écran. Poser une ligne de base au montage (`useRef(read())`).
+- ⚠️⚠️ **Un geste tactile se décide sur un AXE, une seule fois, et ne se rejuge plus.** Appeler
+  `preventDefault()` dès que `dy > 0` vole le panning natif pour **toute la séquence** : un
+  balayage horizontal dans une table large emporte toujours quelques pixels de dérive verticale,
+  et la table devient impossible à parcourir. Verrouiller l'axe à ~8 px (`dy > |dx|`), et traiter
+  un ancêtre déjà défilé **horizontalement** (`scrollLeft > 0`) comme un `scrollTop > 0`.
+- ⚠️⚠️ **Neutraliser un geste natif se fait en JS (`touchmove` non passif + `preventDefault`),
+  jamais en CSS (`overscroll-behavior`).** Si l'application est figée, l'écouteur ne tourne plus et
+  le comportement natif REPREND la main : l'échappatoire survit gratuitement. Le CSS, lui, tiendrait
+  toujours — et en application installée, sans barre d'adresse, il retirerait le filet au moment
+  précis où il sert. Prix à connaître : `{ passive: false }` explicite, les écouteurs tactiles de
+  `document` étant passifs par défaut.
+- ⚠️ **Une distance qui change à chaque `touchmove` ne passe PAS par l'état de la page hôte** :
+  elle vit dans un store de module auquel seul l'indicateur s'abonne (`useSyncExternalStore`).
+  Sinon la page entière — table, groupes, tuiles — se re-rend à chaque pixel, sur le seul appareil
+  où le geste existe.
+- ⚠️ **Les écouteurs posés sur `document` captent aussi ce qui se passe AU-DESSUS** : un
+  `[role="dialog"]` présent doit désarmer, sans quoi le geste agit sur la liste cachée dessous.
+- ⚠️ **Un garde de source qui lit une balise JSX ne peut pas se contenter de `/<Composant[^>]*prop/`** :
+  `[^>]*` ne traverse pas un `>`, donc une prop contenant `=>` écrite avant celle qu'on cherche fait
+  sortir le fichier de la population — et l'anti-vacuité reste verte tant que les fichiers
+  d'aujourd'hui placent la prop en premier. Lire la balise entière en comptant les accolades.
 
 ### Recette NAVIGATEUR — deux sondes qui rendent un faux NÉGATIF silencieux
 
