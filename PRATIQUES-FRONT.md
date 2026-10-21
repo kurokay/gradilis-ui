@@ -136,3 +136,18 @@ pas ici : elles vivent dans la documentation interne de l'écosystème.
   guidées ou parcours qui l'ancrent.
 - Une affirmation sur les internes d'une lib (Mantine, React Router…) n'entre dans une
   doctrine qu'après mesure : lire la doc à jour, ou écrire le test qui la prouve.
+
+### Recette NAVIGATEUR — deux sondes qui rendent un faux NÉGATIF silencieux
+
+Les deux ont été payées, et l'erreur se lit comme un défaut du PRODUIT, pas de la sonde.
+
+- **Patcher `window.fetch` ne voit AUCUNE requête d'une app en axios** (donc
+  `XMLHttpRequest`) : la sonde rend une liste vide, qui se lit « le bouton ne fait rien ».
+  Mesurer le réseau par l'écouteur du navigateur (`page.on('request')`), qui voit les deux
+  transports — jamais par un patch du client HTTP.
+- **Chercher un libellé d'ÉTAT ne prouve pas la présence d'un composant** : une brique de
+  fraîcheur affiche « à jour à l'instant » juste après une lecture (pas « il y a N min »), et
+  son bouton peut être une icône SANS texte. Mesurer la présence par le **nom accessible**
+  (`button[aria-label="…"]`), qui ne dépend pas de l'état.
+- **Avant de rapporter une ABSENCE, poser la contre-épreuve** là où la chose est censée être :
+  une sonde muette et une fonctionnalité manquante se ressemblent trait pour trait.
