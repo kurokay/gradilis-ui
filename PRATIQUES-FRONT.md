@@ -94,6 +94,22 @@ pas ici : elles vivent dans la documentation interne de l'écosystème.
   hausse tactile couvrent boutons et champs, rarement les onglets.
   ⚠️ Corollaire : un `sticky` ne sort JAMAIS de son parent — posé sur une liste dont le parent
   fait exactement la même hauteur, il n'a aucune course et ne colle pas.
+- **L'en-tête collant de `mantine-datatable` n'agit que si SA boîte défile** (payé sur le retour
+  #207 de magasin, 2026-10-26). La lib pose déjà `position: sticky; top: 0` sur son `thead`, mais il
+  s'accroche au viewport de son `ScrollArea` interne : sans hauteur, c'est le DOCUMENT qui défile et
+  les libellés de colonnes disparaissent. ⚠️⚠️ **`<DataTable maxHeight>` ROGNE au lieu de faire
+  défiler** : la lib ne borne que sa racine, et le viewport (`height: 100%` d'un parent flex sans
+  hauteur DÉFINIE) retombe en `auto` — mesuré : 1211 px de contenu coupés à 629, lignes du bas
+  inatteignables, en-tête toujours pas collé. La borne va sur le VIEWPORT,
+  `scrollAreaProps={{ viewportProps: { style: { maxHeight } } }}` (le type de la lib retire `styles`
+  de `scrollAreaProps`), diminuée du chrome de la table RACINE (bordures + pagination, lus en
+  `:scope >` : une recherche descendante attrape la pagination d'une table ENFANT). `maxHeight` et
+  jamais `height` : une liste courte reste courte. ⚠️ La re-mesure observe TOUS les ancêtres jusqu'au
+  conteneur principal, pas le seul parent : un filtre qui s'enroule trois niveaux plus haut déplace
+  la table sans changer la taille de son parent. ⚠️ Sous un plancher de place, AUCUNE borne (état
+  d'avant) plutôt qu'une borne forcée : deux défileurs imbriqués sont pires que le défaut corrigé.
+  ⚠️ jsdom n'a aucun layout : aucun banc ne voit ni le rognage ni le collage — la preuve est une
+  recette navigateur qui mesure `scrollTop` du viewport et le `top` du `thead`.
 - **Une étape de visite guidée qui vise un élément d'une barre à débordement porte un repli**
   (popover centré) : l'élément part dans le menu « Plus » au BUREAU dès que la largeur manque,
   pas seulement sur mobile — et un garde-fou qui vérifie que l'ancre EXISTE dans les sources
