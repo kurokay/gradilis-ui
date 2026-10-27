@@ -153,6 +153,21 @@ pas ici : elles vivent dans la documentation interne de l'écosystème.
   et la frontière `.test.ts` / `.test.tsx` se maintient seule.
 - Accessibilité : `vitest-axe` sur les composants, passe axe-core sur les écrans ; mesurer le
   mode sombre séparément, le clair corrigé ne dit rien du sombre.
+- **Accélérer une suite vitest : mesurer les phases avant de toucher au setup** (magasin, 27/10/2026).
+  - Le setup commun pesait 27 % du temps de la suite, mais ce n'étaient pas les matchers. C'était le
+    graphe Mantine / `@gradilis/ui` chargé dans CHAQUE fichier isolé. Retirer l'import du setup
+    DÉPLACE le coût vers l'import, le total ne bouge pas.
+  - Le levier sûr est **`userEvent.setup({ delay: null })` par défaut**, par un `vi.mock` de
+    `@testing-library/user-event` dans le setup (`{ delay: null, ...opts }` respecte un délai
+    explicite) : −8 % de temps de test, mesuré.
+  - ⚠️⚠️ Ce levier **démasque des courses** : le délai par frappe laissait aux fetchs le temps de
+    répondre. 5 tests sur 12 135 cliquaient sur un bouton encore désactivé ou tapaient avant
+    l'arrivée des données. Les corriger en attendant l'état prêt (`toBeEnabled`, `findBy…`,
+    `getByDisplayValue`), jamais en remettant un délai. Une course démasquée peut aussi désigner un
+    défaut d'écran réel, par exemple une saisie possible avant le chargement d'un défaut serveur.
+  - `isolate: false` sur les fichiers DOM : des centaines de rouges dès que des fichiers font des
+    `vi.mock` de contextes. `vmThreads` / `vmForks` : perdants. `threads` contre `forks` : −4 %
+    seulement.
 
 ## 4. Revue
 
