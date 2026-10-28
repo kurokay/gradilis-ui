@@ -118,6 +118,15 @@ pas ici : elles vivent dans la documentation interne de l'écosystème.
 - **Un texte de visite guidée qui COMPTE ou ÉNUMÈRE des sections ment dès qu'une section est
   gatée** (rôle, module) : dire ce que fait le contrôle, pas combien il contient. Le risque est
   maximal sur une visite SANS liste de rôles, donc jouable par le profil le plus restreint.
+- **Le hook « écran compact » vaut `false` au PREMIER rendu** (Mantine `useMediaQuery`,
+  `getInitialValueInEffect`) : tout ce qui est calculé UNE FOIS depuis lui (initialiseur de `useState`,
+  `data-autofocus` d'une modale) prend la valeur BUREAU sur un vrai téléphone. Lire `matchMedia` en
+  synchrone à ces endroits ; un test qui moque le hook à `true` dès le départ ne le voit pas
+  (magasin, audit mobile S25, 2026-10-27).
+- **Bouton Mantine rogné net au téléphone** : le root est `overflow: hidden`, donc son `min-width: auto`
+  tombe à 0 dans un flex, et le libellé est `nowrap; text-overflow: clip` — « C'est fait » devient « C'es ».
+  En tactile : `min-width: min-content` + libellé `white-space: normal` (coupure entre les mots). ⚠️ Jamais
+  `flex-shrink: 0` global : toute rangée de boutons devient incompressible et déborde (mesuré +85 / +173 px).
 
 ## 3. Tests front
 
