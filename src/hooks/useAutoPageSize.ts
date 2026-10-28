@@ -107,7 +107,11 @@ interface AutoFitInput {
  * Cœur de calcul (pur, sans DOM) — testable indépendamment.
  * `size` = lignes qui tiennent (≥ minRows). `height` remplit jusqu'en bas dans le
  * cas courant ; sur petit écran (plancher minRows plus haut que l'espace dispo),
- * `height` prend la place des minRows lignes → léger scroll de page toléré.
+ * `height` vaut 0 : la table prend sa hauteur NATURELLE (léger scroll de page toléré).
+ * ⚠️ Au plancher, forcer `headerH + footerH + minRows × rowH` laissait un VIDE sous les
+ * lignes : `rowH` est la hauteur de la PREMIÈRE ligne, et au téléphone une première
+ * ligne qui passe à la ligne est plus haute que les suivantes (mesuré sur `/species`).
+ * `FittedDataTable` n'applique la hauteur que si elle est > 0.
  */
 export function computeAutoFit(p: AutoFitInput): { size: number; height: number } {
   // `available` ne peut jamais excéder la hauteur du viewport (une table « qui finit
@@ -120,9 +124,10 @@ export function computeAutoFit(p: AutoFitInput): { size: number; height: number 
   );
   const rowH = p.rowH > 0 ? p.rowH : DEFAULT_HEADER_H; // garde-fou anti /0
   const bodyAvail = available - p.headerH - p.footerH;
-  const size = Math.max(p.minRows, Math.floor(bodyAvail / rowH));
+  const fits = Math.floor(bodyAvail / rowH);
+  const size = Math.max(p.minRows, fits);
   const heightForRows = p.headerH + p.footerH + size * rowH;
-  const height = Math.max(available, heightForRows);
+  const height = fits >= p.minRows ? Math.max(available, heightForRows) : 0;
   return { size, height };
 }
 
