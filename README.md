@@ -169,6 +169,10 @@ petit banc Vite (`visual/`, jamais publié — voir `visual/README.md`).
 
 ## Journal des versions
 
+- **v0.9.5** — `useAutoPageSize` / `computeAutoFit` : au plancher `minRows` (place insuffisante pour plus de
+  lignes, typiquement au téléphone), la hauteur n'est plus imposée (`height: 0`) — la table prend sa hauteur
+  NATURELLE. Forcer `en-tête + pied + minRows × rowH` laissait un vide sous les lignes, `rowH` étant la hauteur
+  de la 1ʳᵉ ligne, plus haute quand elle passe à la ligne. Action dans les apps : aucune.
 - **v0.9.4** — `notify.promise(p, { loading, success, error? }, opts?)` : le pattern
   « chargement → succès/erreur » autour d'une promesse, construit sur `loading`/`resolve`
   (icône, `role`, nom du bouton fermer et priorité des erreurs conservés) ; retourne la promesse
